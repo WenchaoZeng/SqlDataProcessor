@@ -18,6 +18,8 @@ import java.util.List;
 
 import javax.swing.*;
 
+import com.zwc.sqldataprocessor.core.DatabaseConfigLoader;
+
 public class MainWindow {
 
     JFrame frame;
@@ -31,10 +33,8 @@ public class MainWindow {
     void start() throws Exception {
         Log.info("Start main window. App version: %s", Global.version);
 
-        Path databaseConfigPath = Paths.get("./databases.txt");
-        if (Files.notExists(databaseConfigPath)) {
-            Files.createFile(databaseConfigPath);
-        }
+        // 初始化DB配置
+        DatabaseConfigLoader.initializeDefaultConfig();
 
         // 窗口
         frame = new JFrame("SQLDataProcessor");
@@ -80,7 +80,7 @@ public class MainWindow {
         dbSettingBtn.addActionListener(e -> {
             if (e.getID() == ActionEvent.ACTION_PERFORMED) {
                 try {
-                    Runtime.getRuntime().exec("open " + databaseConfigPath.toString());
+                    Runtime.getRuntime().exec("open " + DatabaseConfigLoader.path);
                 } catch (IOException e1) {
                     throw new RuntimeException(e1);
                 }
@@ -124,17 +124,21 @@ public class MainWindow {
                     }
                     renderFileList();
                 } else if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String selectedPath = Global.fileList.get(selectedIndex);
-                    if (selectedIndex != 0) {
-                        Global.addFile(selectedPath);
-                        renderFileList();
-                    }
-                    new ExecuteWindow(selectedPath);
+                    startExecute();
                 }
 
                 return false;
             }
         });
+    }
+
+    void startExecute() {
+        String selectedPath = Global.fileList.get(selectedIndex);
+        if (selectedIndex != 0) {
+            Global.addFile(selectedPath);
+            renderFileList();
+        }
+        new ExecuteWindow(selectedPath);
     }
 
     void renderFileList() {
@@ -210,6 +214,9 @@ public class MainWindow {
                 execBtn.setBackground(background);
                 frame.getContentPane().add(execBtn);
                 fileListComponents.add(execBtn);
+                execBtn.addActionListener(e -> {
+                    startExecute();
+                });
 
                 label = new Label("");
                 label.setSize(800, 70);

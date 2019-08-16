@@ -37,4 +37,14 @@
         </plugins>
     </build>
 
+    <dependencies>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.1.40</version>
+        </dependency>
+
+    </dependencies>
+
 </project>
