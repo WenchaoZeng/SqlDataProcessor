@@ -42,7 +42,7 @@ public class MainWindow {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setLocation((screenSize.width - frame.getWidth()) / 2, (screenSize.height - frame.getHeight()) / 2 / 4);
+        frame.setLocation((screenSize.width - frame.getWidth()) / 2, (screenSize.height - frame.getHeight()) / 2);
         frame.setLayout(null);
         frame.setVisible(true);
 
@@ -104,18 +104,32 @@ public class MainWindow {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
             @Override
             public boolean dispatchKeyEvent(KeyEvent ke) {
-                if (ke.getKeyCode() == KeyEvent.VK_UP && ke.getID() == KeyEvent.KEY_PRESSED) {
+                if (!frame.isFocused()) {
+                    return false;
+                }
+                if (!(ke.getID() == KeyEvent.KEY_PRESSED)) {
+                    return false;
+                }
+
+                if (ke.getKeyCode() == KeyEvent.VK_UP) {
                     selectedIndex--;
                     if (selectedIndex < 0) {
                         selectedIndex = 0;
                     }
                     renderFileList();
-                } else if (ke.getKeyCode() == KeyEvent.VK_DOWN && ke.getID() == KeyEvent.KEY_PRESSED) {
+                } else if (ke.getKeyCode() == KeyEvent.VK_DOWN) {
                     selectedIndex++;
                     if (selectedIndex >= Global.fileList.size()) {
                         selectedIndex = Global.fileList.size() -1;
                     }
                     renderFileList();
+                } else if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String selectedPath = Global.fileList.get(selectedIndex);
+                    if (selectedIndex != 0) {
+                        Global.addFile(selectedPath);
+                        renderFileList();
+                    }
+                    new ExecuteWindow(selectedPath);
                 }
 
                 return false;

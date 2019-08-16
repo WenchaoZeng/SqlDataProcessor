@@ -20,11 +20,10 @@ public class Global {
     public static List<String> fileList;
     static String fileListPath = "./files.txt";
     static {
+        fileList = new ArrayList<>();
         if (Files.exists(Paths.get(fileListPath))) {
             String fileContent = readFile(fileListPath);
-            fileList = Arrays.asList(fileContent.split("\n"));
-        } else {
-            fileList = new ArrayList<>();
+            fileList.addAll(Arrays.asList(fileContent.split("\n")));
         }
     }
     public static void addFile(String path) {
@@ -59,4 +58,6 @@ public class Global {
             throw new RuntimeException(e);
         }
     }
+
+
 }
