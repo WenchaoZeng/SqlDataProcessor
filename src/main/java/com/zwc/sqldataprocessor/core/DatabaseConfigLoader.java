@@ -38,4 +38,9 @@ public class DatabaseConfigLoader {
         String fileContent = JSON.toJSONString(list, SerializerFeature.PrettyFormat);
         Global.writeFile(path, fileContent);
     }
+
+    public static List<DatabaseConfig> loadDatabaseConfigs() {
+        String fileContent = Global.readFile(path);
+        return JSON.parseArray(fileContent, DatabaseConfig.class);
+    }
 }

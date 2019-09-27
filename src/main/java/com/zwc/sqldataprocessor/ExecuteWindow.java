@@ -1,41 +1,58 @@
 package com.zwc.sqldataprocessor;
 
 import java.awt.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.function.Consumer;
 
 import javax.swing.*;
 
+import com.zwc.sqldataprocessor.core.SqlFileExecutor;
+
 public class ExecuteWindow {
-    public ExecuteWindow(String filePath) {
-        String shortName = filePath.substring(filePath.lastIndexOf("/") + 1);
-        JFrame frame = new JFrame(shortName);
+
+    JFrame frame = null;
+    Consumer<String> logPrinter = null;
+    TextArea textArea = null;
+
+    public ExecuteWindow() {
+        frame = new JFrame("执行信息");
         frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         frame.setSize(800, 600);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         frame.setLocation((screenSize.width - frame.getWidth()) / 2, (screenSize.height - frame.getHeight()) / 2);
         frame.setVisible(true);
 
-        TextArea textArea = new TextArea("");
+        textArea = new TextArea("");
         frame.getContentPane().add(textArea);
-
-        new Thread(() -> {
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
-            String text = textArea.getText() + "test\n";
+        logPrinter = msg -> {
+            Log.info(msg);
+            String text = textArea.getText() + msg + "\n";
             textArea.setText(text);
             frame.repaint();
+        };
+    }
 
+    public void focus() {
+        frame.setVisible(true);
+        frame.requestFocus();
+    }
+
+    public void exec(String filePath) {
+
+        textArea.setText("");
+        frame.repaint();
+
+        new Thread(() -> {
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                SqlFileExecutor.exec(filePath, logPrinter);
+            } catch (Exception ex) {
+                StringWriter sw = new StringWriter();
+                ex.printStackTrace(new PrintWriter(sw));
+                logPrinter.accept(sw.toString());
+                return;
             }
-            frame.dispose();
         }).start();
     }
 }

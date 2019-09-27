@@ -26,6 +26,8 @@ public class MainWindow {
     int selectedIndex = 0;
     List<Component> fileListComponents = new ArrayList<>();
 
+    ExecuteWindow executeWindow = null;
+
     public static void main(String[] args) throws Exception {
         new MainWindow().start();
     }
@@ -138,7 +140,12 @@ public class MainWindow {
             Global.addFile(selectedPath);
             renderFileList();
         }
-        new ExecuteWindow(selectedPath);
+
+        if (executeWindow == null) {
+            executeWindow = new ExecuteWindow();
+        }
+        executeWindow.exec(selectedPath);
+        executeWindow.focus();
     }
 
     void renderFileList() {
