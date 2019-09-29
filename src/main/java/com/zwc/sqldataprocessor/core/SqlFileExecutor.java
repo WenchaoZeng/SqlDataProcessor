@@ -58,8 +58,7 @@ public class SqlFileExecutor {
         }
 
         // 导出
-        String exportPath = "";
-        CsvExporter.export(finalDataList, "");
+        String exportPath = ExportExecutor.export(finalDataList);
 
         // 自动打开
         try {

@@ -67,3 +67,4 @@ hs_err_pid*
 log.txt
 databases.txt
 files.txt
+output.csv
