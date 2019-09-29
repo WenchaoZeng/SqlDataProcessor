@@ -34,19 +34,20 @@ public class SqlFileExecutor {
 
             // 导入
             if (sql.fileName != null) {
-                logPrinter.accept("导入文件 " + sql.fileName);
+                logPrinter.accept("导入: " + sql.fileName);
                 dataList = ImportExecutor.doImport(sql.fileName);
                 tables.put(resultName, dataList);
             }
 
             // 数据库查询
             if (sql.databaseName != null) {
-                logPrinter.accept("执行SQL " + sql.databaseName);
+                logPrinter.accept("SQL: " + sql.databaseName);
+                logPrinter.accept(sql.sql);
                 dataList = SqlExecutor.exec(sql.sql, sql.databaseName, configList, tables);
                 tables.put(resultName, dataList);
             }
 
-            String msg = String.format("子结果名称: %s, 行数: %s, 耗时: %s毫秒", resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
+            String msg = String.format("子结果: %s, 行数: %s, 耗时: %s毫秒", resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
             logPrinter.accept(msg);
         }
 
@@ -58,6 +59,7 @@ public class SqlFileExecutor {
         }
 
         // 导出
+        logPrinter.accept("导出结果...\n");
         String exportPath = ExportExecutor.export(finalDataList);
 
         // 自动打开

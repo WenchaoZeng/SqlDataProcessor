@@ -96,6 +96,22 @@ public class MainWindow {
             }
         });
 
+        // 查看日志
+        Button logBtn = new Button("执行日志");
+        logBtn.setSize(80, 40);
+        logBtn.setLocation(rightX - logBtn.getWidth() - 5, 10);
+        frame.getContentPane().add(logBtn);
+        rightX = logBtn.getX();
+        logBtn.addActionListener(e -> {
+            if (e.getID() == ActionEvent.ACTION_PERFORMED) {
+                try {
+                    Runtime.getRuntime().exec("open " + Log.path);
+                } catch (IOException e1) {
+                    throw new RuntimeException(e1);
+                }
+            }
+        });
+
         renderFileList();
         frame.addWindowFocusListener(new WindowFocusListener() {
             @Override

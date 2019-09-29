@@ -54,6 +54,7 @@ public class ExecuteWindow {
                 return;
             }
 
+            MainWindow.instance.focus();
         }).start();
     }
 }

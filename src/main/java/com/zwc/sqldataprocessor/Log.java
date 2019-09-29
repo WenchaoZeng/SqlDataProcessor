@@ -17,6 +17,8 @@ import java.util.Locale;
  */
 public class Log {
 
+    public static String path = "./log.txt";
+
     public static void error(Exception ex) {
         StringWriter sw = new StringWriter();
         ex.printStackTrace(new PrintWriter(sw));
@@ -42,7 +44,7 @@ public class Log {
     }
 
     static void appendToFile(String log) {
-        Path path = Paths.get("./log.txt");
+        Path path = Paths.get(Log.path);
         synchronized (Global.class) {
             try {
                 if (Files.notExists(path)) {
