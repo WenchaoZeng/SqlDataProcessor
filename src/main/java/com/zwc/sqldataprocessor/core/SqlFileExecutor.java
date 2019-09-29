@@ -11,6 +11,7 @@ import com.zwc.sqldataprocessor.Log;
 import com.zwc.sqldataprocessor.core.entity.DataList;
 import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.core.entity.Sql;
+import com.zwc.sqldataprocessor.core.exporter.CsvExporter;
 
 public class SqlFileExecutor {
 
@@ -22,34 +23,30 @@ public class SqlFileExecutor {
 
         List<Sql> sqlList = SqlLoader.loadSql(filePath);
         List<DatabaseConfig> configList = DatabaseConfigLoader.loadDatabaseConfigs();
-
         Map<String, DataList> tables = new HashMap<>();
-
-        sqlList.forEach(x -> {
-            if (x.resultName == null) {
-                x.resultName = defaultResultName;
-            }
-        });
 
         // 执行
         for (Sql sql : sqlList) {
 
             long startTime = System.currentTimeMillis();
             DataList dataList = null;
+            String resultName = sql.resultName != null ? sql.resultName : defaultResultName;
 
             // 导入
             if (sql.fileName != null) {
+                logPrinter.accept("导入文件 " + sql.fileName);
                 dataList = ImportExecutor.doImport(sql.fileName);
-                tables.put(sql.resultName, dataList);
+                tables.put(resultName, dataList);
             }
 
             // 数据库查询
             if (sql.databaseName != null) {
+                logPrinter.accept("执行SQL " + sql.databaseName);
                 dataList = SqlExecutor.exec(sql.sql, sql.databaseName, configList, tables);
-                tables.put(sql.resultName, dataList);
+                tables.put(resultName, dataList);
             }
 
-            String msg = String.format("子结果名称: %s, 行数: %s, 耗时: %s毫秒", sql.resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
+            String msg = String.format("子结果名称: %s, 行数: %s, 耗时: %s毫秒", resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
             logPrinter.accept(msg);
         }
 
@@ -61,7 +58,8 @@ public class SqlFileExecutor {
         }
 
         // 导出
-        String exportPath = Exportor.exportCsv(finalDataList);
+        String exportPath = "";
+        CsvExporter.export(finalDataList, "");
 
         // 自动打开
         try {
