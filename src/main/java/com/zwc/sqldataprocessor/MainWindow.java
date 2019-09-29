@@ -82,7 +82,7 @@ public class MainWindow {
 
         // 数据源配置
         Button dbSettingBtn = new Button("配置数据库");
-        dbSettingBtn.setSize(100, 40);
+        dbSettingBtn.setSize(90, 40);
         dbSettingBtn.setLocation(rightX - dbSettingBtn.getWidth() - 10, 10);
         frame.getContentPane().add(dbSettingBtn);
         rightX = dbSettingBtn.getX();
@@ -97,7 +97,7 @@ public class MainWindow {
         });
 
         // 查看日志
-        Button logBtn = new Button("执行日志");
+        Button logBtn = new Button("查看日志");
         logBtn.setSize(80, 40);
         logBtn.setLocation(rightX - logBtn.getWidth() - 5, 10);
         frame.getContentPane().add(logBtn);
