@@ -16,8 +16,10 @@ public class ImportExecutor {
         Importer importer = null;
         if (filePath.endsWith(".csv") || filePath.endsWith(".CSV")) {
             importer = new CsvImporter();
-        } else if (filePath.endsWith(".xls") || filePath.endsWith(".xls")) {
-            importer = new XlsImporter();
+        } else if (filePath.endsWith(".xls") || filePath.endsWith(".XLS")) {
+            importer = new XlsImporter(false);
+        } else if (filePath.endsWith(".xlsx") || filePath.endsWith(".XLSX")) {
+            importer = new XlsImporter(true);
         }
 
         if (importer == null) {

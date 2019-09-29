@@ -17,11 +17,11 @@ public class ExecuteWindow {
 
     public ExecuteWindow() {
         frame = new JFrame("执行信息");
-        frame.setResizable(false);
+        frame.setResizable(true);
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        frame.setSize(800, 600);
+        frame.setSize(600, 400);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setLocation((screenSize.width - frame.getWidth()) / 2, (screenSize.height - frame.getHeight()) / 2);
+        frame.setLocation(((screenSize.width - frame.getWidth()) / 2), (screenSize.height - frame.getHeight()) / 2);
         frame.setVisible(true);
 
         textArea = new TextArea("");
@@ -53,6 +53,7 @@ public class ExecuteWindow {
                 logPrinter.accept(sw.toString());
                 return;
             }
+
         }).start();
     }
 }

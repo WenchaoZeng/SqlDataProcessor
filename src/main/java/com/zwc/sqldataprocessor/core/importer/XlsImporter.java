@@ -17,15 +17,26 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class XlsImporter implements Importer {
+
+    boolean isXlsx;
+
+    public XlsImporter(boolean isXlsx) {
+        this.isXlsx = isXlsx;
+    }
 
     @Override
     public DataList doImport(byte[] content) {
         DataList table = new DataList();
         Workbook book = null;
         try {
-            book = WorkbookFactory.create(new NPOIFSFileSystem(new ByteArrayInputStream(content)));
+            if (isXlsx) {
+                book = new XSSFWorkbook(new ByteArrayInputStream(content));
+            } else {
+                book = WorkbookFactory.create(new NPOIFSFileSystem(new ByteArrayInputStream(content)));
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -28,8 +28,15 @@ public class MainWindow {
 
     ExecuteWindow executeWindow = null;
 
+    public static MainWindow instance;
     public static void main(String[] args) throws Exception {
-        new MainWindow().start();
+        instance = new MainWindow();
+        instance.start();
+    }
+
+    public void focus() {
+        frame.setVisible(true);
+        frame.requestFocus();
     }
 
     void start() throws Exception {
