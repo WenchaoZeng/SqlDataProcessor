@@ -3,12 +3,18 @@ package com.zwc.sqldataprocessor.core;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.zwc.sqldataprocessor.Global;
 import com.zwc.sqldataprocessor.core.entity.DataList;
+import com.zwc.sqldataprocessor.core.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.core.importer.CsvImporter;
 import com.zwc.sqldataprocessor.core.importer.Importer;
 import com.zwc.sqldataprocessor.core.importer.XlsImporter;
+import org.apache.commons.lang3.StringUtils;
 
 public class ImportExecutor {
     public static DataList doImport(String filePath) {
@@ -32,6 +38,78 @@ public class ImportExecutor {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        return importer.doImport(fileContent);
+        DataList table = importer.doImport(fileContent);
+
+        removeEmptyColumn(table);
+        calculateColumnType(table);
+
+        return table;
+    }
+
+    static Pattern intPattern = Pattern.compile("^-?\\d+$");
+    static Pattern decimalPattern = Pattern.compile("^(-?\\d+)(\\.\\d+)?$");
+    static void calculateColumnType(DataList table) {
+        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
+
+            // 空字符串
+            boolean isEmpty = true;
+            for (List<String> row : table.rows) {
+                String value = row.get(columnIndex);
+                if (!StringUtils.isBlank(value)) {
+                    isEmpty = false;
+                    break;
+                }
+            }
+            if (isEmpty) {
+                continue;
+            }
+
+            // 整数
+            boolean isInt = true;
+            for (List<String> row : table.rows) {
+                String value = row.get(columnIndex);
+                if (StringUtils.isBlank(value)) {
+                    continue;
+                }
+                Matcher matcher = intPattern.matcher(value);
+                if (!matcher.find()) {
+                    isInt = false;
+                }
+            }
+            if (isInt) {
+                table.columnTypes.set(columnIndex, ColumnType.INT);
+                continue;
+            }
+
+            // 小数
+            boolean isDecimal = true;
+            for (List<String> row : table.rows) {
+                String value = row.get(columnIndex);
+                if (StringUtils.isBlank(value)) {
+                    continue;
+                }
+                Matcher matcher = decimalPattern.matcher(value);
+                if (!matcher.find()) {
+                    isDecimal = false;
+                }
+            }
+            if (isDecimal) {
+                table.columnTypes.set(columnIndex, ColumnType.DECIMAL);
+                continue;
+            }
+        }
+    }
+
+    static void removeEmptyColumn(DataList table) {
+        for (int columnIndex = table.columns.size() - 1; columnIndex >= 0; --columnIndex) {
+            String columnName = table.columns.get(columnIndex);
+            if (StringUtils.isBlank(columnName)) {
+                table.columns.remove(columnIndex);
+                table.columnTypes.remove(columnIndex);
+                for (List<String> row : table.rows) {
+                    row.remove(columnIndex);
+                }
+            }
+        }
     }
 }
