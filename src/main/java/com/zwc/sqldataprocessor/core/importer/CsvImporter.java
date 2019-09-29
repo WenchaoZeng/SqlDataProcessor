@@ -32,9 +32,10 @@ public class CsvImporter implements Importer {
                     continue;
                 }
                 if (values.size() < table.columns.size()) {
-                    throw new RuntimeException("CSV格式错误, 数据行的列数小于表头列数");
+                    throw new RuntimeException("格式错误, 数据行的列数小于表头列数");
                 }
-                table.rows.add(values);
+                List<String> values2 = values.subList(0, table.columns.size());
+                table.rows.add(values2);
             }
 
             return  table;

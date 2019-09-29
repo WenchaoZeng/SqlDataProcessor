@@ -8,6 +8,7 @@ import com.zwc.sqldataprocessor.Global;
 import com.zwc.sqldataprocessor.core.entity.DataList;
 import com.zwc.sqldataprocessor.core.importer.CsvImporter;
 import com.zwc.sqldataprocessor.core.importer.Importer;
+import com.zwc.sqldataprocessor.core.importer.XlsImporter;
 
 public class ImportExecutor {
     public static DataList doImport(String filePath) {
@@ -15,6 +16,8 @@ public class ImportExecutor {
         Importer importer = null;
         if (filePath.endsWith(".csv") || filePath.endsWith(".CSV")) {
             importer = new CsvImporter();
+        } else if (filePath.endsWith(".xls") || filePath.endsWith(".xls")) {
+            importer = new XlsImporter();
         }
 
         if (importer == null) {
