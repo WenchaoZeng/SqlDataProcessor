@@ -16,12 +16,6 @@
 # import /Users/xxx/Downloads/xxx.xlsx
 ```
 
-可以用`as $xxx`指定结果集的名称, 若不指定, 则默认结果集名称为$table
-
-```sql
-# import /Users/xxx/Downloads/xxx.xlsx as $table2
-```
-
 ## `# xxx` 指定一个数据库连接名称和一个SQL, 以`;`分号结束
 
 ```sql
