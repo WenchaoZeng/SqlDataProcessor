@@ -45,16 +45,20 @@ public class ExecuteWindow {
         frame.repaint();
 
         new Thread(() -> {
+            boolean success = false;
             try {
-                SqlFileExecutor.exec(filePath, logPrinter);
+                success = SqlFileExecutor.exec(filePath, logPrinter);
             } catch (Exception ex) {
                 StringWriter sw = new StringWriter();
                 ex.printStackTrace(new PrintWriter(sw));
                 logPrinter.accept(sw.toString());
-                return;
+                success = false;
             }
 
-            MainWindow.instance.focus();
+            if (success) {
+                MainWindow.instance.focus();
+            }
+
         }).start();
     }
 }

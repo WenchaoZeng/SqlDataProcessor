@@ -42,11 +42,17 @@ public class SqlExecutor {
             }
 
             try (PreparedStatement cmd = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+                DataList table = new DataList();
+                table.columns = new ArrayList<>();
+                table.columnTypes = new ArrayList<>();
+
+                if (sql.startsWith("insert") || sql.startsWith("update") || sql.startsWith("delete") || sql.startsWith("INSERT") || sql.startsWith("UPDATE") || sql.startsWith("DELETE")) {
+                    cmd.execute();
+                    return table;
+                }
+
                 cmd.setFetchSize(Integer.MIN_VALUE);
                 try (ResultSet resultSet = cmd.executeQuery()) {
-                    DataList table = new DataList();
-                    table.columns = new ArrayList<>();
-                    table.columnTypes = new ArrayList<>();
 
                     // 列头
                     ResultSetMetaData metaData = resultSet.getMetaData();
@@ -147,16 +153,21 @@ public class SqlExecutor {
             ColumnType type = table.columnTypes.get(columnIndex);
             String name = table.columns.get(columnIndex);
             String value = rowValues.get(columnIndex);
-            if (StringUtils.isBlank(value)) {
-                value = null;
-            }
             String selectColumnFormat = null;
             if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
                 selectColumnFormat = "%s as `%s`";
+                if (StringUtils.isBlank(value)) {
+                    value = null;
+                }
             } else if (type == ColumnType.DATETIME) {
-                selectColumnFormat = "cast('%s' as datetime) as `%s`";
+                if (StringUtils.isBlank(value)) {
+                    value = null;
+                    selectColumnFormat = "cast(%s as datetime) as `%s`";
+                } else {
+                    selectColumnFormat = "cast('%s' as datetime) as `%s`";
+                }
             } else {
-                if (value == null) {
+                if (StringUtils.isBlank(value)) {
                     value = "";
                 }
                 value = value.replace("'", "\\'");

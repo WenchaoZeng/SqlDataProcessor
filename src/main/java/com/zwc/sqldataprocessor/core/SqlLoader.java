@@ -16,10 +16,12 @@ public class SqlLoader {
 
             // 读取sql语句
             if (sql != null) {
-                sql.sql += line + "\n";
                 if (line.endsWith(";")) {
+                    sql.sql += line;
                     sqlList.add(sql);
                     sql = null;
+                } else {
+                    sql.sql += line + "\n";
                 }
                 continue;
             }

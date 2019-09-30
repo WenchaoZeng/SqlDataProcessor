@@ -17,20 +17,21 @@ public class SqlFileExecutor {
 
     static String defaultResultName = "table";
 
-    public static void exec(String filePath, Consumer<String> logPrinter) {
+    public static boolean exec(String filePath, Consumer<String> logPrinter) {
 
-        logPrinter.accept("执行:  " + filePath);
+        logPrinter.accept("执行:  " + filePath + "\n");
 
         List<Sql> sqlList = SqlLoader.loadSql(filePath);
         List<DatabaseConfig> configList = DatabaseConfigLoader.loadDatabaseConfigs();
         Map<String, DataList> tables = new HashMap<>();
 
         // 执行
+        DataList dataList = null;
+        String resultName = defaultResultName;
         for (Sql sql : sqlList) {
 
             long startTime = System.currentTimeMillis();
-            DataList dataList = null;
-            String resultName = sql.resultName != null ? sql.resultName : defaultResultName;
+            resultName = sql.resultName != null ? sql.resultName : defaultResultName;
 
             // 导入
             if (sql.fileName != null) {
@@ -47,20 +48,19 @@ public class SqlFileExecutor {
                 tables.put(resultName, dataList);
             }
 
-            String msg = String.format("子结果: %s, 行数: %s, 耗时: %s毫秒", resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
+            String msg = String.format("结果集: %s, 行数: %s, 耗时: %s毫秒\n", resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
             logPrinter.accept(msg);
         }
 
         // 获取最终结果集
-        DataList finalDataList = tables.get(defaultResultName);
-        if (finalDataList == null || finalDataList.rows.size() <= 0) {
-            logPrinter.accept("最终结果集为空");
-            return;
+        if (dataList == null || dataList.rows.size() <= 0) {
+            logPrinter.accept("最终结果集" + resultName + "为空");
+            return false;
         }
 
         // 导出
-        logPrinter.accept("导出结果...\n");
-        String exportPath = ExportExecutor.export(finalDataList);
+        logPrinter.accept("导出结果集" + resultName + "\n");
+        String exportPath = ExportExecutor.export(dataList);
 
         // 自动打开
         try {
@@ -69,6 +69,6 @@ public class SqlFileExecutor {
             throw new RuntimeException(ex);
         }
 
-
+        return true;
     }
 }
