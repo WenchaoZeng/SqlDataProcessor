@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.*;
+
 /**
  * 全局存储区
  */
@@ -59,5 +61,7 @@ public class Global {
         }
     }
 
-
+    static void alert(String msg) {
+        JOptionPane.showMessageDialog(null, msg);
+    }
 }
