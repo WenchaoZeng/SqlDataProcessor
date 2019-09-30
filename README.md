@@ -20,7 +20,7 @@
 # import /Users/xxx/Downloads/xxx.xlsx
 ```
 
-## `# xxx` 指定一个数据库连接名称和一个SQL, 以`;`分号结束
+## `# xxx` 指定一个数据库连接名称和一个SQL, 以`;`分号结束. select, insert, update, delete都支持.
 
 ```sql
 # local_db
@@ -36,22 +36,41 @@ limit 10
 ;
 ```
 
-SQL中可以引用之前的结果集
+## `as $xxx` 指定结果集的名称, 若不指定, 则默认结果集名称为$table
 
 ```sql
-# local_db
+# import /Users/xxx/Downloads/xxx.xlsx as $table1
+
+# local_db as $table2
 select
     temp.name
-from $table2 temp
+from test_table temp;
+```
+
+## SQL中可以引用之前的结果集
+
+```sql
+# import /Users/xxx/Downloads/xxx.xlsx
+
+# local_db as $table2
+select
+    id
+    text
+from test_table2
 ;
 
 # local_db
 select
     temp.name,
-    temp2.text
-from test_table temp
-left join test_table2 temp2 on temp2.id = temp.temp2_id
+    temp2.text,
+    temp3.label
+from $table temp
+left join $table2 temp2 on temp2.id = temp.id2
+left join test_table3 temp3 on temp3.id = temp.id2
 ;
+
+# local_db
+select * from $table temp;
 ```
 
 ## `##` 注释
@@ -65,15 +84,4 @@ select
     ## 这是注释
 from test_table temp
 ;
-```
-
-## `as $xxx` 指定结果集的名称, 若不指定, 则默认结果集名称为$table
-
-```sql
-# import /Users/xxx/Downloads/xxx.xlsx as $table1
-
-# local_db as $table2
-select
-    temp.name
-from $table1 temp;
 ```
