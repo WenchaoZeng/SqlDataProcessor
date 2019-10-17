@@ -33,12 +33,13 @@ public class SqlExecutor {
     }
 
     static DataList execRawSql(String sql, DatabaseConfig dbConfig) {
-        String url = String.format("jdbc:mysql://%s:3306/%s?useUnicode=true&characterset=utf-8", dbConfig.dbHost, dbConfig.dbName);
-        try (Connection conn = DriverManager.getConnection(url, dbConfig.dbUserName, dbConfig.dbPassword)) {
+        try (Connection conn = DriverManager.getConnection(dbConfig.url, dbConfig.userName, dbConfig.password)) {
 
             // 解除group_concat的长度限制
-            try (Statement cmd = conn.createStatement()) {
-                cmd.execute("SET SESSION group_concat_max_len = 1000000;");
+            if (dbConfig.url.contains("mysql")) {
+                try (Statement cmd = conn.createStatement()) {
+                    cmd.execute("SET SESSION group_concat_max_len = 1000000;");
+                }
             }
 
             try (PreparedStatement cmd = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
@@ -51,7 +52,7 @@ public class SqlExecutor {
                     return table;
                 }
 
-                cmd.setFetchSize(Integer.MIN_VALUE);
+                cmd.setFetchSize(Integer.MAX_VALUE);
                 try (ResultSet resultSet = cmd.executeQuery()) {
 
                     // 列头
