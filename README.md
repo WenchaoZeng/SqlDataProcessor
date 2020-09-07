@@ -2,9 +2,7 @@
 
 一个基于sql的数据处理工具, 可以通过写sql的方式对excel, csv, 夸库mysql表等进行数据处理和加工.
 
-Mac:  [点击下载](https://github.com/WenchaoZeng/SqlDataProcessor/releases/download/2019-09-30/MacApp_SqlDataProcessor.zip)
-
-Windows/其他平台: 自己下载maven编译运行
+[点击下载](https://github.com/WenchaoZeng/SqlDataProcessor/releases)
 
 # 使用场景
 
