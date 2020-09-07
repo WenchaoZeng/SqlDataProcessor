@@ -27,10 +27,12 @@ cp ./target/sqldataprocessor-0.0.0-SNAPSHOT/lib/* ./target/release/result/bundle
 
 bash zip.sh
 
+# 打夸平台的命令行启动的zip包
 mkdir mkdir ./target/release/java
 mkdir mkdir ./target/release/java/lib
 cp ./target/sqldataprocessor-0.0.0-SNAPSHOT/lib/* ./target/release/java/lib/
 cp ./start.sh ./target/release/java/
+cp ./start.sh ./target/release/java/start.bat
 bash zip2.sh
 
 exit 0
