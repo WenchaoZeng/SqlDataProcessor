@@ -26,4 +26,11 @@ mkdir ./target/release/result/bundles/SqlDataProcessor.app/Contents/Java/lib
 cp ./target/sqldataprocessor-0.0.0-SNAPSHOT/lib/* ./target/release/result/bundles/SqlDataProcessor.app/Contents/Java/lib/
 
 bash zip.sh
+
+mkdir mkdir ./target/release/java
+mkdir mkdir ./target/release/java/lib
+cp ./target/sqldataprocessor-0.0.0-SNAPSHOT/lib/* ./target/release/java/lib/
+cp ./start.sh ./target/release/java/
+bash zip2.sh
+
 exit 0

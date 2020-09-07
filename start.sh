@@ -1,0 +1,1 @@
+java -cp "lib/*" com.zwc.sqldataprocessor.MacApp
