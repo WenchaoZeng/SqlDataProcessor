@@ -22,7 +22,7 @@
 # import /Users/xxx/Downloads/xxx.xlsx
 ```
 
-## `# xxx` 指定一个数据库连接名称和一个SQL, 以`;`分号结束. select, insert, update, delete都支持.
+## `# xxx` 指定一个数据库连接名称和一个SQL, 以`;`分号结束. select, insert, update, delete, create table都支持.
 
 ```sql
 # local_db
