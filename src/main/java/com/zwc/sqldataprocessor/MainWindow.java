@@ -2,17 +2,11 @@ package com.zwc.sqldataprocessor;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,11 +82,7 @@ public class MainWindow {
         rightX = dbSettingBtn.getX();
         dbSettingBtn.addActionListener(e -> {
             if (e.getID() == ActionEvent.ACTION_PERFORMED) {
-                try {
-                    Runtime.getRuntime().exec("open " + DatabaseConfigLoader.path);
-                } catch (IOException e1) {
-                    throw new RuntimeException(e1);
-                }
+                Global.openFile(DatabaseConfigLoader.path);
             }
         });
 
@@ -104,11 +94,7 @@ public class MainWindow {
         rightX = logBtn.getX();
         logBtn.addActionListener(e -> {
             if (e.getID() == ActionEvent.ACTION_PERFORMED) {
-                try {
-                    Runtime.getRuntime().exec("open " + Log.path);
-                } catch (IOException e1) {
-                    throw new RuntimeException(e1);
-                }
+                Global.openFile(Log.path);
             }
         });
 

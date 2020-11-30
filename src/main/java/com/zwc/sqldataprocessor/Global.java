@@ -1,6 +1,8 @@
 package com.zwc.sqldataprocessor;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -55,9 +57,23 @@ public class Global {
     public static String readFile(String path) {
         try {
             byte[] bytes = Files.readAllBytes(Paths.get(path));
-            return new String(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void openFile(String path) {
+        String os = System.getProperty("os.name");
+        String cmd = "open " + path;
+        if (os.contains("Windows")) {
+            path  = path.replace("/", "\\");
+            cmd = "explorer.exe " + path;
+        }
+        try {
+            Runtime.getRuntime().exec(cmd);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 

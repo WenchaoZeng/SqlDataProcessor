@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import java.util.List;
+
+import com.zwc.sqldataprocessor.Global;
 import com.zwc.sqldataprocessor.Log;
 import com.zwc.sqldataprocessor.core.entity.DataList;
 import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
@@ -63,11 +65,7 @@ public class SqlFileExecutor {
         String exportPath = ExportExecutor.export(dataList);
 
         // 自动打开
-        try {
-            Runtime.getRuntime().exec("open " + exportPath);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+        Global.openFile(exportPath);
 
         return true;
     }
