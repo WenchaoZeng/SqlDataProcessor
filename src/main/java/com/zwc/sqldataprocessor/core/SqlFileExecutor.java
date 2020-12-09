@@ -67,6 +67,9 @@ public class SqlFileExecutor {
         // 自动打开
         Global.openFile(exportPath);
 
+        // 回收内存
+        System.gc();
+
         return true;
     }
 }
