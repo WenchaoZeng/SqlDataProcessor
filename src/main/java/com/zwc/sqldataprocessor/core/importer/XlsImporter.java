@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.zwc.sqldataprocessor.core.entity.DataList;
 import com.zwc.sqldataprocessor.core.entity.DataList.ColumnType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -77,13 +78,24 @@ public class XlsImporter implements Importer {
             });
 
             if (table.columns == null) {
+                // 去掉后面空的列名
+                for (int index = values.size() - 1; index >= 0; --index) {
+                    if (StringUtils.isBlank(values.get(index))) {
+                        values.remove(index);
+                    }
+                }
+
                 table.columns = values;
                 table.columnTypes = values.stream().map(x -> ColumnType.TEXT).collect(Collectors.toList());
                 continue;
             }
-            if (values.size() < table.columns.size()) {
-                throw new RuntimeException("格式错误, 数据行的列数小于表头列数");
+
+            // 自动补充数据列以满足列的个数
+            int lackCount = table.columns.size() - values.size();
+            for (int index = 0; index < lackCount; ++index) {
+                values.add("");
             }
+
             List<String> values2 = values.subList(0, table.columns.size());
             table.rows.add(values2);
         }
