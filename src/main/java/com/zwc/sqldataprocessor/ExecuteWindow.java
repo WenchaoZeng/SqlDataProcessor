@@ -48,6 +48,9 @@ public class ExecuteWindow {
             boolean success = false;
             try {
                 success = SqlFileExecutor.exec(filePath, logPrinter);
+
+                // 回收内存
+                System.gc();
             } catch (Exception ex) {
                 StringWriter sw = new StringWriter();
                 ex.printStackTrace(new PrintWriter(sw));
@@ -56,7 +59,7 @@ public class ExecuteWindow {
             }
 
             if (success) {
-                MainWindow.instance.focus();
+                SqlDataProcessor.instance.focus();
             }
 
         }).start();

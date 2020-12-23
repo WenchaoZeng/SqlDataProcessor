@@ -14,7 +14,7 @@ import javax.swing.*;
 
 import com.zwc.sqldataprocessor.core.DatabaseConfigLoader;
 
-public class MainWindow {
+public class SqlDataProcessor {
 
     JFrame frame;
     int selectedIndex = 0;
@@ -22,9 +22,9 @@ public class MainWindow {
 
     ExecuteWindow executeWindow = null;
 
-    public static MainWindow instance;
+    public static SqlDataProcessor instance;
     public static void main(String[] args) throws Exception {
-        instance = new MainWindow();
+        instance = new SqlDataProcessor();
         instance.start();
     }
 

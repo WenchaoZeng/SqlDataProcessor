@@ -18,7 +18,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.zwc.sqldataprocessor.MacApp</mainClass>
+                            <mainClass>com.zwc.sqldataprocessor.SqlDataProcessor</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
