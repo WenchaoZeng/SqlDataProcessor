@@ -57,6 +57,7 @@ public class SqlDataProcessor {
         TextField textField = new TextField(note);
         textField.setBounds(leftX + 10, 13, 400, 34);
         textField.setEnabled(true);
+        textField.setBackground(Color.white);
         leftX = textField.getX() + textField.getWidth();
         frame.getContentPane().add(textField);
 
@@ -227,7 +228,7 @@ public class SqlDataProcessor {
                 Button execBtn = new Button("执行");
                 execBtn.setSize(80, 40);
                 execBtn.setLocation(frame.getWidth() - 90, y + 18);
-                execBtn.setBackground(background);
+                execBtn.setForeground(Color.BLACK);
                 frame.getContentPane().add(execBtn);
                 fileListComponents.add(execBtn);
                 execBtn.addActionListener(e -> {

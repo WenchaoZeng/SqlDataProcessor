@@ -25,6 +25,7 @@ public class ExecuteWindow {
         frame.setVisible(true);
 
         textArea = new TextArea("");
+        textArea.setBackground(Color.WHITE);
         frame.getContentPane().add(textArea);
         logPrinter = msg -> {
             Log.info(msg);
