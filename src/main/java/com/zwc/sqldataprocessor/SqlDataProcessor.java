@@ -7,6 +7,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,18 +89,6 @@ public class SqlDataProcessor {
             }
         });
 
-        // 查看日志
-        Button logBtn = new Button("查看日志");
-        logBtn.setSize(80, 40);
-        logBtn.setLocation(rightX - logBtn.getWidth() - 5, 10);
-        frame.getContentPane().add(logBtn);
-        rightX = logBtn.getX();
-        logBtn.addActionListener(e -> {
-            if (e.getID() == ActionEvent.ACTION_PERFORMED) {
-                Global.openFile(Log.path);
-            }
-        });
-
         renderFileList();
         frame.addWindowFocusListener(new WindowFocusListener() {
             @Override
@@ -145,16 +135,20 @@ public class SqlDataProcessor {
     }
 
     void startExecute() {
-        String selectedPath = Global.fileList.get(selectedIndex);
+        String path = Global.fileList.get(selectedIndex);
+        if (!Global.ensureFileExists(path)) {
+            return;
+        }
+
         if (selectedIndex != 0) {
-            Global.addFile(selectedPath);
+            Global.addFile(path);
             renderFileList();
         }
 
         if (executeWindow == null) {
             executeWindow = new ExecuteWindow();
         }
-        executeWindow.exec(selectedPath);
+        executeWindow.exec(path);
         executeWindow.focus();
     }
 
@@ -206,7 +200,7 @@ public class SqlDataProcessor {
             String shortName = filePath.substring(filePath.lastIndexOf("/") + 1);
             Label label = new Label(shortName);
             label.setFont(font.deriveFont(Font.PLAIN, 20));
-            label.setSize(600, 30);
+            label.setSize(500, 30);
             label.setBackground(background);
             label.setLocation(20, y + 10);
             frame.getContentPane().add(label);
@@ -215,7 +209,7 @@ public class SqlDataProcessor {
 
             label = new Label(filePath.replace(shortName, ""));
             label.setFont(font.deriveFont(Font.PLAIN, 12));
-            label.setSize(600, 20);
+            label.setSize(500, 20);
             label.setLocation(20, y + 40);
             label.setBackground(background);
             frame.getContentPane().add(label);
@@ -225,14 +219,43 @@ public class SqlDataProcessor {
             // 选中背景
             if (background != null) {
 
+                int rightX = frame.getWidth();
+
+                // 执行按钮
                 Button execBtn = new Button("执行");
-                execBtn.setSize(80, 40);
-                execBtn.setLocation(frame.getWidth() - 90, y + 18);
+                execBtn.setSize(60, 40);
+                execBtn.setLocation(rightX - execBtn.getWidth() - 10, y + 18);
                 execBtn.setForeground(Color.BLACK);
                 frame.getContentPane().add(execBtn);
                 fileListComponents.add(execBtn);
                 execBtn.addActionListener(e -> {
                     startExecute();
+                });
+                rightX = execBtn.getX();
+
+                // 编辑按钮
+                Button editBtn = new Button("编辑");
+                editBtn.setSize(60, 40);
+                editBtn.setLocation(rightX - editBtn.getWidth() - 10, y + 18);
+                frame.getContentPane().add(editBtn);
+                fileListComponents.add(editBtn);
+                rightX = editBtn.getX();
+                editBtn.addActionListener(e -> {
+                    String path = Global.fileList.get(selectedIndex);
+                    Global.openFile(path);
+                });
+
+                // 移除按钮
+                Button delBtn = new Button("移除");
+                delBtn.setSize(60, 40);
+                delBtn.setLocation(rightX - delBtn.getWidth() - 10, y + 18);
+                delBtn.setForeground(Color.red);
+                frame.getContentPane().add(delBtn);
+                fileListComponents.add(delBtn);
+                rightX = delBtn.getX();
+                delBtn.addActionListener(e -> {
+                    Global.removeFile(selectedIndex);
+                    renderFileList();
                 });
 
                 label = new Label("");

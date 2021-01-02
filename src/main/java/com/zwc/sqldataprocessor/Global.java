@@ -35,15 +35,33 @@ public class Global {
             return;
         }
 
-        // 自动置顶
-        if (fileList.contains(path)) {
-            fileList.remove(path);
+        if (!ensureFileExists(path)) {
+            return;
         }
+
+        // 自动置顶
+        fileList.remove(path);
         fileList.add(0, path);
 
-        // 保存
+        saveFileList();
+    }
+
+    public static void removeFile(int index) {
+        fileList.remove(index);
+        saveFileList();
+    }
+
+    static void saveFileList() {
         String fileContent = String.join("\n", fileList);
         writeFile(fileListPath, fileContent);
+    }
+
+    public static boolean ensureFileExists(String path) {
+        if (!Files.exists(Paths.get(path))) {
+            alert("文件不存在: " + path);
+            return false;
+        }
+        return true;
     }
 
     public static void writeFile(String path, String content) {
@@ -64,6 +82,10 @@ public class Global {
     }
 
     public static void openFile(String path) {
+        if (!ensureFileExists(path)) {
+            return;
+        }
+
         String os = System.getProperty("os.name");
         String cmd = "open " + path;
         if (os.contains("Windows")) {
