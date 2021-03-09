@@ -32,7 +32,10 @@ public class CsvImporter implements Importer {
                     continue;
                 }
                 if (values.size() < table.columns.size()) {
-                    throw new RuntimeException("格式错误, 数据行的列数小于表头列数");
+                    int count = table.columns.size() - values.size();
+                    for (int i = 0; i < count; ++i) {
+                        values.add("");
+                    }
                 }
                 List<String> values2 = values.subList(0, table.columns.size());
                 table.rows.add(values2);
