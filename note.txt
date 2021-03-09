@@ -18,3 +18,5 @@
 java.lang.RuntimeException: java.sql.SQLException: Can not issue data manipulation statements with executeQuery().
 
     支持set语句的执行
+
+    支持命令行直接触发执行一个sql
