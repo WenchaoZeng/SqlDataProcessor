@@ -15,6 +15,7 @@ import java.util.List;
 import javax.swing.*;
 
 import com.zwc.sqldataprocessor.core.DatabaseConfigLoader;
+import com.zwc.sqldataprocessor.core.SqlFileExecutor;
 
 public class SqlDataProcessor {
 
@@ -26,6 +27,16 @@ public class SqlDataProcessor {
 
     public static SqlDataProcessor instance;
     public static void main(String[] args) throws Exception {
+
+        // 命令行模式
+        if (args.length > 0) {
+            String filePath = args[0];
+            SqlFileExecutor.exec(filePath, msg -> {
+                System.out.println(msg);
+            });
+            return;
+        }
+
         instance = new SqlDataProcessor();
         instance.start();
     }
