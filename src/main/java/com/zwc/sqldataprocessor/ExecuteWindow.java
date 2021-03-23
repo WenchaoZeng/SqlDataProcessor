@@ -59,10 +59,23 @@ public class ExecuteWindow {
                 success = false;
             }
 
+            // 打印内存信息
+            memoryStats(logPrinter);
+
             if (success) {
                 SqlDataProcessor.instance.focus();
             }
 
         }).start();
+    }
+
+    static void memoryStats(Consumer<String> logPrinter) {
+        int mb = 1024 * 1024;
+        Runtime instance = Runtime.getRuntime();
+        logPrinter.accept("***** Heap utilization statistics [MB] *****");
+        logPrinter.accept("Total Memory: " + instance.totalMemory() / mb);
+        logPrinter.accept("Free Memory: " + instance.freeMemory() / mb);
+        logPrinter.accept("Used Memory: " + (instance.totalMemory() - instance.freeMemory()) / mb);
+        logPrinter.accept("Max Memory: " + instance.maxMemory() / mb);
     }
 }
