@@ -1,19 +1,5 @@
 待开发功能:
 
-    java.util.UnknownFormatConversionException: Conversion = '''
-    at java.util.Formatter.checkText(Formatter.java:2579)
-    at java.util.Formatter.parse(Formatter.java:2565)
-    at java.util.Formatter.format(Formatter.java:2501)
-    at java.util.Formatter.format(Formatter.java:2455)
-    at java.lang.String.format(String.java:2940)
-    at com.zwc.sqldataprocessor.Log.formatMsg(Log.java:42)
-    at com.zwc.sqldataprocessor.Log.info(Log.java:29)
-    at com.zwc.sqldataprocessor.ExecuteWindow.lambda$new$0(ExecuteWindow.java:31)
-    at com.zwc.sqldataprocessor.core.SqlFileExecutor.exec(SqlFileExecutor.java:48)
-    at com.zwc.sqldataprocessor.ExecuteWindow.lambda$exec$1(ExecuteWindow.java:51)
-    at java.lang.Thread.run(Thread.java:748)
-
-
     truncate table wenchao_tasks;
 java.lang.RuntimeException: java.sql.SQLException: Can not issue data manipulation statements with executeQuery().
 
