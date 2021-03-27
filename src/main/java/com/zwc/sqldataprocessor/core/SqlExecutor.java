@@ -20,23 +20,18 @@ import org.apache.commons.lang3.StringUtils;
 
 public class SqlExecutor {
 
-    public static DataList exec(String sql, String databaseName, List<DatabaseConfig> configList, Map<String, DataList> tables) {
-
+    public static DataList exec(String sql, String databaseName, Map<String, DataList> tables) {
         String rawSql = renderSql(sql, tables);
-
-        DatabaseConfig dbConfig = configList.stream().filter(x -> x.name.equals(databaseName)).findAny().orElse(null);
-        if (dbConfig == null) {
-            throw new RuntimeException(databaseName +"数据库的配置不存在");
-        }
-
-        return execRawSql(rawSql, dbConfig);
+        return execRawSql(rawSql, databaseName);
     }
 
-    static DataList execRawSql(String sql, DatabaseConfig dbConfig) {
-        try (Connection conn = DriverManager.getConnection(dbConfig.url, dbConfig.userName, dbConfig.password)) {
+    static DataList execRawSql(String sql, String databaseName) {
+        try {
+
+            Connection conn = DatabaseConfigLoader.getConn(databaseName);
 
             // 解除group_concat的长度限制
-            if (dbConfig.url.contains("mysql")) {
+            if (DatabaseConfigLoader.isMySql(databaseName)) {
                 try (Statement cmd = conn.createStatement()) {
                     cmd.execute("SET SESSION group_concat_max_len = 1000000;");
                 }

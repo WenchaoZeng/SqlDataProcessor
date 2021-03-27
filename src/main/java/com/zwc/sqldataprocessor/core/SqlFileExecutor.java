@@ -20,11 +20,18 @@ public class SqlFileExecutor {
     static String defaultResultName = "table";
 
     public static boolean exec(String filePath, Consumer<String> logPrinter) {
+        try {
+            return internalExec(filePath, logPrinter);
+        } finally {
+            DatabaseConfigLoader.closeConnections();
+        }
+    }
+
+    static boolean internalExec(String filePath, Consumer<String> logPrinter) {
 
         logPrinter.accept("执行:  " + filePath + "\n");
 
         List<Sql> sqlList = SqlLoader.loadSql(filePath);
-        List<DatabaseConfig> configList = DatabaseConfigLoader.loadDatabaseConfigs();
         Map<String, DataList> tables = new HashMap<>();
 
         // 执行
@@ -46,7 +53,7 @@ public class SqlFileExecutor {
             if (sql.databaseName != null) {
                 logPrinter.accept("SQL: " + sql.databaseName);
                 logPrinter.accept(sql.sql);
-                dataList = SqlExecutor.exec(sql.sql, sql.databaseName, configList, tables);
+                dataList = SqlExecutor.exec(sql.sql, sql.databaseName, tables);
                 tables.put(resultName, dataList);
             }
 
