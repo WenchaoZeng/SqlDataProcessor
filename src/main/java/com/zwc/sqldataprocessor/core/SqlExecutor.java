@@ -47,7 +47,7 @@ public class SqlExecutor {
                 table.columns = new ArrayList<>();
                 table.columnTypes = new ArrayList<>();
 
-                if (sql.startsWith("create table") || sql.startsWith("CREATE TABLE") || sql.startsWith("insert") || sql.startsWith("update") || sql.startsWith("delete") || sql.startsWith("INSERT") || sql.startsWith("UPDATE") || sql.startsWith("DELETE")) {
+                if (!sql.startsWith("select") && !sql.startsWith("SELECT")) {
                     cmd.execute();
                     return table;
                 }
