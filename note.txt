@@ -1,6 +1,1 @@
 待开发功能:
-
-    truncate table wenchao_tasks;
-java.lang.RuntimeException: java.sql.SQLException: Can not issue data manipulation statements with executeQuery().
-
-    支持set语句的执行
