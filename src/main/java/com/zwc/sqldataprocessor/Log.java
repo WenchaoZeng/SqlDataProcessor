@@ -39,7 +39,10 @@ public class Log {
 
     static String formatMsg(String msg, Object... params) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-        msg = dateFormat.format(new Date()) + ": " + String.format(msg, params);
+        if (params.length > 0) {
+            msg = String.format(msg, params);
+        }
+        msg = dateFormat.format(new Date()) + ": " + msg;
         return msg;
     }
 
