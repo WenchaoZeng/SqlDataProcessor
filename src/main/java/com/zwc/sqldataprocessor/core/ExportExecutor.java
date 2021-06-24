@@ -8,8 +8,13 @@ import com.zwc.sqldataprocessor.core.entity.DataList;
 import com.zwc.sqldataprocessor.core.exporter.CsvExporter;
 
 public class ExportExecutor {
-    public static String export(DataList table) {
-        String path = "./output.csv";
+    static int index = 0;
+    public static String export(DataList table, String path) {
+        ++index;
+        index = index % 10;
+        if (path == null) {
+            path = String.format("./output%s.csv", index);
+        }
 
         CsvExporter exporter = new CsvExporter();
         byte[] bytes = exporter.export(table);

@@ -46,9 +46,9 @@ public class ExecuteWindow {
         frame.repaint();
 
         new Thread(() -> {
-            boolean success = false;
+            boolean success = true;
             try {
-                success = SqlFileExecutor.exec(filePath, logPrinter);
+                SqlFileExecutor.exec(filePath, logPrinter);
 
                 // 回收内存
                 System.gc();

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.zwc.sqldataprocessor.Global;
 import com.zwc.sqldataprocessor.core.entity.Sql;
+import com.zwc.sqldataprocessor.core.entity.Sql.SqlType;
 
 public class SqlLoader {
     public static List<Sql> loadSql(String filePath) {
@@ -31,6 +32,7 @@ public class SqlLoader {
                 // 导入
                 if (line.startsWith("# import ")) {
                     Sql importSql = new Sql();
+                    importSql.type = SqlType.IMPORT;
                     importSql.fileName = line.replace("# import ", "");
                     importSql.fileName = removeResultNameClause(importSql.fileName);
                     importSql.resultName = getResultName(line);
@@ -38,10 +40,23 @@ public class SqlLoader {
                     continue;
                 }
 
+                // 导出
+                if (line.startsWith("# export")) {
+                    Sql exportSql = new Sql();
+                    exportSql.type = SqlType.EXPORT;
+                    String exportFilePath = line.replace("# export", "").trim();
+                    if (!exportFilePath.equals("")) {
+                        exportSql.fileName = exportFilePath;
+                    }
+                    sqlList.add(exportSql);
+                    continue;
+                }
+
                 // db名称
                 String databaseName = line.replace("# ", "");
                 databaseName = removeResultNameClause(databaseName);
                 sql = new Sql();
+                sql.type = SqlType.SQL;
                 sql.databaseName = databaseName;
                 sql.sql = "";
                 sql.resultName = getResultName(line);
