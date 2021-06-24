@@ -68,3 +68,4 @@ log.txt
 databases.txt
 files.txt
 output.csv
+output*.csv

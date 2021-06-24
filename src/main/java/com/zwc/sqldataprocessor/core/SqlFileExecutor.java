@@ -75,7 +75,7 @@ public class SqlFileExecutor {
         if (sqlList.get(sqlList.size() - 1).type != SqlType.EXPORT) {
             doExport(resultName, dataList, logPrinter, null);
         }
-        
+
     }
 
     static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath) {
