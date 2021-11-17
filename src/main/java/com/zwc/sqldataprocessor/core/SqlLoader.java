@@ -11,21 +11,8 @@ public class SqlLoader {
     public static List<Sql> loadSql(String filePath) {
         String fileContent = Global.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
-        Sql sql = null;
         for (String line : fileContent.split("\n")) {
             line = line.trim();
-
-            // 读取sql语句
-            if (sql != null) {
-                if (line.endsWith(";")) {
-                    sql.sql += line;
-                    sqlList.add(sql);
-                    sql = null;
-                } else {
-                    sql.sql += line + "\n";
-                }
-                continue;
-            }
 
             if (line.startsWith("# ")) {
 
@@ -55,12 +42,24 @@ public class SqlLoader {
                 // db名称
                 String databaseName = line.replace("# ", "");
                 databaseName = removeResultNameClause(databaseName);
-                sql = new Sql();
+                Sql sql = new Sql();
                 sql.type = SqlType.SQL;
                 sql.databaseName = databaseName;
                 sql.sql = "";
                 sql.resultName = getResultName(line);
+                sqlList.add(sql);
+                continue;
             }
+
+            // 读取sql语句
+            if (sqlList.size() <= 0) {
+                continue;
+            }
+            Sql sql = sqlList.get(sqlList.size() - 1);
+            if (sql.type != SqlType.SQL) {
+                continue;
+            }
+            sql.sql += line + "\n";
         }
 
         return sqlList;

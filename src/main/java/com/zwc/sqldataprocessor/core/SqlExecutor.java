@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class SqlExecutor {
         return execRawSql(rawSql, databaseName);
     }
 
-    static DataList execRawSql(String sql, String databaseName) {
+    public static DataList execRawSql(String sql, String databaseName) {
         try {
 
             Connection conn = DatabaseConfigLoader.getConn(databaseName);
@@ -37,53 +38,76 @@ public class SqlExecutor {
                 }
             }
 
-            try (PreparedStatement cmd = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-                DataList table = new DataList();
-                table.columns = new ArrayList<>();
-                table.columnTypes = new ArrayList<>();
+            try (Statement cmd = conn.createStatement()) {
+                boolean hasResult = cmd.execute(sql);
 
-                if (!sql.startsWith("select") && !sql.startsWith("SELECT")) {
-                    cmd.execute();
-                    return table;
-                }
-
+                // 读取结果
                 cmd.setFetchSize(Integer.MAX_VALUE);
-                try (ResultSet resultSet = cmd.executeQuery()) {
+                DataList table = newEmptyList();
+                for (;;hasResult = cmd.getMoreResults()) {
 
-                    // 列头
-                    ResultSetMetaData metaData = resultSet.getMetaData();
-                    int count = metaData.getColumnCount();
-                    for (int i = 1; i <= count; ++i) {
-                        String name = metaData.getColumnLabel(i);
-                        String type = metaData.getColumnTypeName(i);
-                        table.columns.add(name);
-                        if (type.equals("INT")) {
-                            table.columnTypes.add(ColumnType.INT);
-                        } else if (type.equals("DECIMAL")) {
-                            table.columnTypes.add(ColumnType.DECIMAL);
-                        } else if (type.equals("DATETIME")) {
-                            table.columnTypes.add(ColumnType.DATETIME);
-                        } else {
-                            table.columnTypes.add(ColumnType.TEXT);
+                    // 查询语句
+                    if (hasResult) {
+                        try (ResultSet resultSet = cmd.getResultSet()) {
+                            table = readResult(resultSet);
+                            continue;
                         }
                     }
 
-                    // 行数据
-                    while (resultSet.next()) {
-                        List<String> values = new ArrayList<>();
-                        for (int i = 1; i <= table.columns.size(); ++ i) {
-                            String value = resultSet.getString(i);
-                            values.add(value);
-                        }
-                        table.rows.add(values);
+                    // 非查询语句
+                    int updateCount = cmd.getUpdateCount();
+                    if (updateCount == -1) { // 代表已经没有结果了
+                        break;
                     }
+                    table = newEmptyList();
+                };
 
-                    return table;
-                }
+                return table;
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    static DataList newEmptyList() {
+        DataList table = new DataList();
+        table.columns = new ArrayList<>();
+        table.columnTypes = new ArrayList<>();
+        return table;
+    }
+
+    static DataList readResult(ResultSet resultSet) throws SQLException {
+        DataList table = newEmptyList();
+
+        // 列头
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int count = metaData.getColumnCount();
+        for (int i = 1; i <= count; ++i) {
+            String name = metaData.getColumnLabel(i);
+            String type = metaData.getColumnTypeName(i);
+            table.columns.add(name);
+            if (type.equals("INT")) {
+                table.columnTypes.add(ColumnType.INT);
+            } else if (type.equals("DECIMAL")) {
+                table.columnTypes.add(ColumnType.DECIMAL);
+            } else if (type.equals("DATETIME")) {
+                table.columnTypes.add(ColumnType.DATETIME);
+            } else {
+                table.columnTypes.add(ColumnType.TEXT);
+            }
+        }
+
+        // 行数据
+        while (resultSet.next()) {
+            List<String> values = new ArrayList<>();
+            for (int i = 1; i <= table.columns.size(); ++ i) {
+                String value = resultSet.getString(i);
+                values.add(value);
+            }
+            table.rows.add(values);
+        }
+
+        return table;
     }
 
     static String renderSql(String sql, Map<String, DataList> tables) {

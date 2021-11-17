@@ -92,6 +92,9 @@ public class DatabaseConfigLoader {
 
         String fileContent = Global.readFile(path);
         databaseConfigs = JSON.parseArray(fileContent, DatabaseConfig.class);
+        for (DatabaseConfig dbConfig : databaseConfigs) {
+            dbConfig.url += "&allowMultiQueries=true";
+        }
     }
 
     public static void closeConnections() {

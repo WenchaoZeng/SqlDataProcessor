@@ -30,7 +30,8 @@ public class SqlFileExecutor {
 
     static void internalExec(String filePath, Consumer<String> logPrinter) {
 
-        logPrinter.accept("执行:  " + filePath + "\n");
+        logPrinter.accept("执行:  " + filePath);
+        logPrinter.accept("\n");
 
         List<Sql> sqlList = SqlLoader.loadSql(filePath);
         if (sqlList.size() <= 0) {
@@ -69,6 +70,8 @@ public class SqlFileExecutor {
             if (sql.type == SqlType.EXPORT) {
                 doExport(resultName, dataList, logPrinter, sql.fileName);
             }
+
+            logPrinter.accept("\n");
         }
 
         // 导出最后的结果集
@@ -79,20 +82,17 @@ public class SqlFileExecutor {
     }
 
     static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath) {
-        if (dataList == null || dataList.rows.size() <= 0) {
-            logPrinter.accept("结果集" + resultName + "为空, 忽略导出");
-        }
-
         // 导出
-        logPrinter.accept("导出结果集" + resultName + "\n");
+        logPrinter.accept("导出结果集" + resultName);
         String exportPath = ExportExecutor.export(dataList, filePath);
+        logPrinter.accept("导出文件路径为: " + exportPath);
 
         // 自动打开
         Global.openFile(exportPath);
     }
 
     static void printSqlStatus(String resultName, DataList dataList, Consumer<String> logPrinter, long startTime) {
-        String msg = String.format("结果集: %s, 行数: %s, 耗时: %s毫秒\n", resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
+        String msg = String.format("结果集: %s, 行数: %s, 耗时: %s毫秒", resultName, dataList.rows.size(), System.currentTimeMillis() - startTime);
         logPrinter.accept(msg);
     }
 }
