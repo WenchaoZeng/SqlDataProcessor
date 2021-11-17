@@ -84,7 +84,7 @@ public class SqlFileExecutor {
     static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath) {
         // 导出
         logPrinter.accept("导出结果集" + resultName);
-        String exportPath = ExportExecutor.export(dataList, filePath);
+        String exportPath = ExportExecutor.export(resultName, dataList, filePath);
         logPrinter.accept("导出文件路径为: " + exportPath);
 
         // 自动打开
