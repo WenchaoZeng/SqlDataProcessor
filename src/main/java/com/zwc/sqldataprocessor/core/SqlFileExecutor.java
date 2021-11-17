@@ -45,7 +45,7 @@ public class SqlFileExecutor {
         String resultName = defaultResultName;
         for (Sql sql : sqlList) {
 
-            logPrinter.accept("-----------------");
+            logPrinter.accept("==============================");
 
             long startTime = System.currentTimeMillis();
             resultName = sql.resultName != null ? sql.resultName : defaultResultName;
@@ -71,15 +71,12 @@ public class SqlFileExecutor {
             if (sql.type == SqlType.EXPORT) {
                 doExport(resultName, dataList, logPrinter, sql.fileName);
             }
-
-            logPrinter.accept("-----------------");
         }
 
         // 导出最后的结果集
         if (sqlList.get(sqlList.size() - 1).type != SqlType.EXPORT) {
-            logPrinter.accept("-----------------");
+            logPrinter.accept("==============================");
             doExport(resultName, dataList, logPrinter, null);
-            logPrinter.accept("-----------------");
         }
 
     }
