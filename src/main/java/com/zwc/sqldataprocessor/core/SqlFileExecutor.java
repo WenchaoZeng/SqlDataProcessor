@@ -31,7 +31,6 @@ public class SqlFileExecutor {
     static void internalExec(String filePath, Consumer<String> logPrinter) {
 
         logPrinter.accept("执行:  " + filePath);
-        logPrinter.accept("\n");
 
         List<Sql> sqlList = SqlLoader.loadSql(filePath);
         if (sqlList.size() <= 0) {
@@ -45,6 +44,8 @@ public class SqlFileExecutor {
         DataList dataList = null;
         String resultName = defaultResultName;
         for (Sql sql : sqlList) {
+
+            logPrinter.accept("-----------------");
 
             long startTime = System.currentTimeMillis();
             resultName = sql.resultName != null ? sql.resultName : defaultResultName;
@@ -71,12 +72,14 @@ public class SqlFileExecutor {
                 doExport(resultName, dataList, logPrinter, sql.fileName);
             }
 
-            logPrinter.accept("\n");
+            logPrinter.accept("-----------------");
         }
 
         // 导出最后的结果集
         if (sqlList.get(sqlList.size() - 1).type != SqlType.EXPORT) {
+            logPrinter.accept("-----------------");
             doExport(resultName, dataList, logPrinter, null);
+            logPrinter.accept("-----------------");
         }
 
     }
