@@ -24,6 +24,8 @@ public class ExportExecutor {
         // 确定导出文件路径
         if (path == null) {
             path = String.format("./output/%s.csv", resultName);
+        } else if (!path.contains("/") && !path.contains("\\")) {
+            path = String.format("./output/%s.csv", path);
         }
 
         // 执行导出

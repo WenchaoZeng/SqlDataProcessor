@@ -22,23 +22,25 @@
 # import /Users/xxx/Downloads/xxx.xlsx
 ```
 
-## `# xxx` 指定一个数据库连接名称和一个SQL, 以`;`分号结束. select, insert, update, delete, create table都支持.
+## 使用 `# xxx` 来指定一个数据库连接名称和紧跟着一个或多个SQL语句, 以最后一个SQL语句执行结果作为本次的结果
 
 ```sql
 # local_db
+set @input = 'hello';
+update test_table set a = 2 where a = 1;
 select
     temp.name,
     temp2.text
 from test_table temp
 left join test_table2 temp2 on temp2.id = temp.temp2_id
 where
-    text = 'hello'
+    text = @input
 order by temp.id desc
 limit 10
 ;
 ```
 
-## `as $xxx` 指定结果集的名称, 若不指定, 则默认结果集名称为$table
+## 使用 `as $xxx` 来指定结果集的名称, 若不指定, 则默认结果集名称为$table
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx as $table1
@@ -49,7 +51,7 @@ select
 from test_table temp;
 ```
 
-## SQL中可以引用之前的结果集
+## 在SQL中可以使用 `$xxx` 的方式来引用之前的结果集
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx
@@ -75,10 +77,24 @@ left join test_table3 temp3 on temp3.id = temp.id2
 select * from $table temp;
 ```
 
-## `##` 注释
+## 使用 `# export`  来导出上一个执行的结果集
+
+```sql
+-- 使用默认路径和文件名
+# export
+
+-- 指定导出文件的名称
+# export 这是一个文件名
+
+-- 使用指定的完整路径
+# export /Users/wenchaozeng/Downloads/aa.csv
+```
+
+## 使用 `##` 和 `--`  来添加注释
 
 ```sql
 
+-- 这是注释
 ## 这是注释
 # local_db
 select
