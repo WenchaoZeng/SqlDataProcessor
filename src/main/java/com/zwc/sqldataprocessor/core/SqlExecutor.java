@@ -86,11 +86,11 @@ public class SqlExecutor {
             String name = metaData.getColumnLabel(i);
             String type = metaData.getColumnTypeName(i);
             table.columns.add(name);
-            if (type.equals("INT")) {
+            if (type.equals("INT") || type.equals("BIGINT")|| type.equals("TINYINT")) {
                 table.columnTypes.add(ColumnType.INT);
             } else if (type.equals("DECIMAL")) {
                 table.columnTypes.add(ColumnType.DECIMAL);
-            } else if (type.equals("DATETIME")) {
+            } else if (type.equals("DATETIME") || type.equals("TIMESTAMP") || type.equals("DATE")) {
                 table.columnTypes.add(ColumnType.DATETIME);
             } else {
                 table.columnTypes.add(ColumnType.TEXT);
@@ -187,11 +187,12 @@ public class SqlExecutor {
                     selectColumnFormat = "cast('%s' as datetime) as `%s`";
                 }
             } else {
-                if (StringUtils.isBlank(value)) {
-                    value = "";
+                if (value == null) {
+                    selectColumnFormat = "%s as `%s`";
+                } else {
+                    value = value.replace("'", "\\'");
+                    selectColumnFormat = "'%s' as `%s`";
                 }
-                value = value.replace("'", "\\'");
-                selectColumnFormat = "'%s' as `%s`";
             }
             selectColumns.add(String.format(selectColumnFormat, value, name));
         }

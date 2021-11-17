@@ -15,8 +15,13 @@ public class CsvExporter {
         try {
             CSVPrinter csvPrinter = new CSVPrinter(stringBuilder, CSVFormat.DEFAULT);
             csvPrinter.printRecord(table.columns);
+            String[] csvValues = new String[table.columns.size()];
             for (List<String> values : table.rows) {
-                csvPrinter.printRecord(values);
+                for (int columnIndex = 0; columnIndex < csvValues.length; ++columnIndex) {
+                    String value = values.get(columnIndex);
+                    csvValues[columnIndex] = value == null ? "<null>" : value;
+                }
+                csvPrinter.printRecord(csvValues);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
