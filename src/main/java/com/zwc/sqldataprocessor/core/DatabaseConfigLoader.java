@@ -73,15 +73,12 @@ public class DatabaseConfigLoader {
 
     public static boolean isMySql(String databaseName) {
         DatabaseConfig dbConfig = getDbConfig(databaseName);
-        return dbConfig.url.contains("mysql");
+        return dbConfig != null && dbConfig.url.contains("mysql");
     }
 
     static DatabaseConfig getDbConfig(String databaseName) {
         loadDatabaseConfigs();
         DatabaseConfig dbConfig = databaseConfigs.stream().filter(x -> x.name.equals(databaseName)).findAny().orElse(null);
-        if (dbConfig == null) {
-            throw new RuntimeException(databaseName +"数据库的配置不存在");
-        }
         return dbConfig;
     }
 

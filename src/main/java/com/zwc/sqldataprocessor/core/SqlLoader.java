@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import java.util.List;
 import com.zwc.sqldataprocessor.Global;
+import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.core.entity.Sql;
 import com.zwc.sqldataprocessor.core.entity.Sql.SqlType;
 
@@ -41,13 +42,16 @@ public class SqlLoader {
                 // db名称
                 String databaseName = line.replaceFirst("# ", "");
                 databaseName = removeResultNameClause(databaseName);
-                Sql sql = new Sql();
-                sql.type = SqlType.SQL;
-                sql.databaseName = databaseName;
-                sql.sql = "";
-                sql.resultName = getResultName(line);
-                sqlList.add(sql);
-                continue;
+                DatabaseConfig dbConfig = DatabaseConfigLoader.getDbConfig(databaseName);
+                if (dbConfig != null) {
+                    Sql sql = new Sql();
+                    sql.type = SqlType.SQL;
+                    sql.databaseName = databaseName;
+                    sql.sql = "";
+                    sql.resultName = getResultName(line);
+                    sqlList.add(sql);
+                    continue;
+                }
             }
 
             // 读取sql语句
