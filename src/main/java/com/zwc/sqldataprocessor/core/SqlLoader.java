@@ -12,7 +12,6 @@ public class SqlLoader {
         String fileContent = Global.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
         for (String line : fileContent.split("\n")) {
-            line = line.trim();
 
             if (line.startsWith("# ")) {
 
