@@ -59,7 +59,6 @@ public class SqlExecutor {
                     if (updateCount == -1) { // 代表已经没有结果了
                         break;
                     }
-                    table = newEmptyList();
                 };
 
                 return table;
