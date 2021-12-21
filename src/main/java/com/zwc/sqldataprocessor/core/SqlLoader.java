@@ -39,7 +39,7 @@ public class SqlLoader {
                 }
 
                 // db名称
-                String databaseName = line.replace("# ", "");
+                String databaseName = line.replaceFirst("# ", "");
                 databaseName = removeResultNameClause(databaseName);
                 Sql sql = new Sql();
                 sql.type = SqlType.SQL;
