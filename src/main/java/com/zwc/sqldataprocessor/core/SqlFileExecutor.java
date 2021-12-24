@@ -42,20 +42,19 @@ public class SqlFileExecutor {
 
         // 执行
         DataList dataList = null;
-        String resultName = defaultResultName;
+        String lastResultName = defaultResultName;
         for (Sql sql : sqlList) {
 
             logPrinter.accept("==============================");
-
             long startTime = System.currentTimeMillis();
-            resultName = sql.resultName != null ? sql.resultName : defaultResultName;
 
             // 导入
             if (sql.type == SqlType.IMPORT) {
                 logPrinter.accept("导入: " + sql.fileName);
                 dataList = ImportExecutor.doImport(sql.fileName);
-                tables.put(resultName, dataList);
-                printSqlStatus(resultName, dataList, logPrinter, startTime);
+                lastResultName = sql.resultName != null ? sql.resultName : defaultResultName;
+                tables.put(lastResultName, dataList);
+                printSqlStatus(lastResultName, dataList, logPrinter, startTime);
             }
 
             // 数据库查询
@@ -63,20 +62,21 @@ public class SqlFileExecutor {
                 logPrinter.accept("SQL: " + sql.databaseName);
                 logPrinter.accept(sql.sql);
                 dataList = SqlExecutor.exec(sql.sql, sql.databaseName, tables);
-                tables.put(resultName, dataList);
-                printSqlStatus(resultName, dataList, logPrinter, startTime);
+                lastResultName = sql.resultName != null ? sql.resultName : defaultResultName;
+                tables.put(lastResultName, dataList);
+                printSqlStatus(lastResultName, dataList, logPrinter, startTime);
             }
 
             // 导出
             if (sql.type == SqlType.EXPORT) {
-                doExport(resultName, dataList, logPrinter, sql.fileName);
+                doExport(lastResultName, dataList, logPrinter, sql.fileName);
             }
         }
 
         // 导出最后的结果集
         if (sqlList.get(sqlList.size() - 1).type != SqlType.EXPORT) {
             logPrinter.accept("==============================");
-            doExport(resultName, dataList, logPrinter, null);
+            doExport(lastResultName, dataList, logPrinter, null);
         }
 
     }
