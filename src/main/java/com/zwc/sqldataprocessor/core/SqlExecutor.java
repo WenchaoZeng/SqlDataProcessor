@@ -193,8 +193,8 @@ public class SqlExecutor {
                 if (value == null) {
                     selectColumnFormat = "%s as `%s`";
                 } else {
-                    value = value.replace("'", "\\'");
                     value = value.replace("\\", "\\\\");
+                    value = value.replace("'", "\\'");
                     selectColumnFormat = "'%s' as `%s`";
                 }
             }
