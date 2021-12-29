@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.zwc.sqldataprocessor.Global;
 import com.zwc.sqldataprocessor.core.entity.DataList;
 import com.zwc.sqldataprocessor.core.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
@@ -27,6 +28,9 @@ public class SqlExecutor {
     }
 
     public static DataList execRawSql(String sql, String databaseName) {
+
+        Global.writeFile("./output/current.sql", sql);
+
         try {
 
             Connection conn = DatabaseConfigLoader.getConn(databaseName);
@@ -190,6 +194,7 @@ public class SqlExecutor {
                     selectColumnFormat = "%s as `%s`";
                 } else {
                     value = value.replace("'", "\\'");
+                    value = value.replace("\\", "\\\\");
                     selectColumnFormat = "'%s' as `%s`";
                 }
             }
