@@ -29,7 +29,7 @@ public class SqlExecutor {
 
     public static DataList execRawSql(String sql, String databaseName) {
 
-        Global.writeFile("./output/current.sql", sql);
+        Global.writeOutputFile("./current.sql", sql);
 
         try {
 
