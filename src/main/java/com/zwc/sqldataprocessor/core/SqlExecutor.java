@@ -163,7 +163,7 @@ public class SqlExecutor {
             }
         }
 
-        return renderSelectSql(rowValues, table) + " where false";
+        return renderSelectSql(rowValues, table) + " from (select 1) _sqldataprocessor_ where false";
     }
 
     static String renderSelectSql(int rowIndex, DataList table) {
