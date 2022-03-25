@@ -31,6 +31,12 @@ public class SqlDataProcessor {
         // 命令行模式
         if (args.length > 0) {
             String filePath = args[0];
+
+            // 不导出null值
+            if (args.length > 1 && args[1].equals("--nonull")) {
+                Global.exportNulls = false;
+            }
+
             SqlFileExecutor.exec(filePath, msg -> {
                 System.out.println(msg);
             });

@@ -3,6 +3,8 @@ package com.zwc.sqldataprocessor.core.exporter;
 import java.io.IOException;
 
 import java.util.List;
+
+import com.zwc.sqldataprocessor.Global;
 import com.zwc.sqldataprocessor.core.entity.DataList;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -19,7 +21,7 @@ public class CsvExporter {
             for (List<String> values : table.rows) {
                 for (int columnIndex = 0; columnIndex < csvValues.length; ++columnIndex) {
                     String value = values.get(columnIndex);
-                    csvValues[columnIndex] = value == null ? "<null>" : value;
+                    csvValues[columnIndex] = value == null && Global.exportNulls ? "<null>" : value;
                 }
                 csvPrinter.printRecord(csvValues);
             }
