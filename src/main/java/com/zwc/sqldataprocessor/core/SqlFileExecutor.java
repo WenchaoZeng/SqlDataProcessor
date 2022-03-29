@@ -69,22 +69,15 @@ public class SqlFileExecutor {
 
             // 导出
             if (sql.type == SqlType.EXPORT) {
-                doExport(lastResultName, dataList, logPrinter, sql.fileName);
+                doExport(lastResultName, dataList, logPrinter, sql.fileName, sql.exportNulls);
             }
         }
-
-        // 导出最后的结果集
-        if (sqlList.get(sqlList.size() - 1).type != SqlType.EXPORT) {
-            logPrinter.accept("==============================");
-            doExport(lastResultName, dataList, logPrinter, null);
-        }
-
     }
 
-    static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath) {
+    static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath, boolean exportNulls) {
         // 导出
         logPrinter.accept("导出结果集" + resultName);
-        String exportPath = ExportExecutor.export(resultName, dataList, filePath);
+        String exportPath = ExportExecutor.export(resultName, dataList, filePath, exportNulls);
         logPrinter.accept("导出文件路径为: " + exportPath);
 
         // 自动打开

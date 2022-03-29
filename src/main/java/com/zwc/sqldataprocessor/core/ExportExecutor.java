@@ -10,11 +10,11 @@ import com.zwc.sqldataprocessor.core.entity.DataList;
 import com.zwc.sqldataprocessor.core.exporter.CsvExporter;
 
 public class ExportExecutor {
-    public static String export(String resultName, DataList table, String path) {
+    public static String export(String resultName, DataList table, String path, boolean exportNulls) {
 
         // 执行导出
         CsvExporter exporter = new CsvExporter();
-        byte[] bytes = exporter.export(table);
+        byte[] bytes = exporter.export(table, exportNulls);
 
         // 写入导出文件
         if (path == null) {

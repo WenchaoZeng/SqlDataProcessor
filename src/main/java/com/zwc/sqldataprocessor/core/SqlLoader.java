@@ -12,9 +12,20 @@ public class SqlLoader {
     public static List<Sql> loadSql(String filePath) {
         String fileContent = Global.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
+        boolean exportNulls = true;
         for (String line : fileContent.split("\n")) {
 
             if (line.startsWith("# ")) {
+
+                if (line.startsWith("# noexportnulls")) {
+                    exportNulls = false;
+                    continue;
+                }
+
+                if (line.startsWith("# exportnulls")) {
+                    exportNulls = true;
+                    continue;
+                }
 
                 // 导入
                 if (line.startsWith("# import ")) {
@@ -31,6 +42,7 @@ public class SqlLoader {
                 if (line.startsWith("# export")) {
                     Sql exportSql = new Sql();
                     exportSql.type = SqlType.EXPORT;
+                    exportSql.exportNulls = exportNulls;
                     String exportFilePath = line.replace("# export", "").trim();
                     if (!exportFilePath.equals("")) {
                         exportSql.fileName = exportFilePath;
@@ -63,6 +75,14 @@ public class SqlLoader {
                 continue;
             }
             sql.sql += line + "\n";
+        }
+
+        // 确保最后有一个导出语句
+        if (sqlList.size() > 0 && sqlList.get(sqlList.size() - 1).type != SqlType.EXPORT) {
+            Sql exportSql = new Sql();
+            exportSql.type = SqlType.EXPORT;
+            exportSql.exportNulls = exportNulls;
+            sqlList.add(exportSql);
         }
 
         return sqlList;

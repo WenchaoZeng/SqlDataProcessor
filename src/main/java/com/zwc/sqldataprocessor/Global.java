@@ -22,8 +22,6 @@ public class Global {
      */
     public static String version = "2019-09-30";
 
-    public static boolean exportNulls = true;
-
     public static List<String> fileList;
     static String fileListPath = "./files.txt";
     static {

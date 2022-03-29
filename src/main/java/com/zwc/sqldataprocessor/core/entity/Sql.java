@@ -6,6 +6,7 @@ public class Sql {
     public String sql;
     public String fileName;
     public String resultName;
+    public boolean exportNulls;
     public enum SqlType {
         SQL,
         IMPORT,

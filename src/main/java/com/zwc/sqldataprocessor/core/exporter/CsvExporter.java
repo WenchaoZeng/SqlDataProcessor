@@ -11,7 +11,7 @@ import org.apache.commons.csv.CSVPrinter;
 
 public class CsvExporter {
 
-    public byte[] export(DataList table) {
+    public byte[] export(DataList table, boolean exportNulls) {
         StringBuilder stringBuilder = new StringBuilder();
 
         try {
@@ -21,7 +21,7 @@ public class CsvExporter {
             for (List<String> values : table.rows) {
                 for (int columnIndex = 0; columnIndex < csvValues.length; ++columnIndex) {
                     String value = values.get(columnIndex);
-                    csvValues[columnIndex] = value == null && Global.exportNulls ? "<null>" : value;
+                    csvValues[columnIndex] = value == null && exportNulls ? "<null>" : value;
                 }
                 csvPrinter.printRecord(csvValues);
             }
