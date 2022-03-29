@@ -17,12 +17,12 @@ public class SqlLoader {
 
             if (line.startsWith("# ")) {
 
-                if (line.startsWith("# noexportnulls")) {
+                if (line.startsWith("# no export nulls")) {
                     exportNulls = false;
                     continue;
                 }
 
-                if (line.startsWith("# exportnulls")) {
+                if (line.startsWith("# export nulls")) {
                     exportNulls = true;
                     continue;
                 }
