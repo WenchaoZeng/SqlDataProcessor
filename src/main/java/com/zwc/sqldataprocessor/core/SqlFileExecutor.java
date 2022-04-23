@@ -68,8 +68,14 @@ public class SqlFileExecutor {
             }
 
             // 导出
-            if (sql.type == SqlType.EXPORT) {
+            if (sql.type == SqlType.EXPORT || sql.type == SqlType.END) {
                 doExport(lastResultName, dataList, logPrinter, sql.fileName, sql.exportNulls);
+
+                // 提前结束
+                if (sql.type == SqlType.END) {
+                    logPrinter.accept("结束");
+                    break;
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ public class Sql {
     public enum SqlType {
         SQL,
         IMPORT,
-        EXPORT
+        EXPORT,
+        END
     }
 }

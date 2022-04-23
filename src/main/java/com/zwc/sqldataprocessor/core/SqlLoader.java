@@ -17,6 +17,13 @@ public class SqlLoader {
 
             if (line.startsWith("# ")) {
 
+                if (line.startsWith("# end")) {
+                    Sql endSql = new Sql();
+                    endSql.type = SqlType.END;
+                    sqlList.add(endSql);
+                    continue;
+                }
+
                 if (line.startsWith("# no export nulls")) {
                     exportNulls = false;
                     continue;
