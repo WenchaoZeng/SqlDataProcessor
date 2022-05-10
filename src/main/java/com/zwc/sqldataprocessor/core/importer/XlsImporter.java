@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,11 +49,24 @@ public class XlsImporter implements Importer {
             if (row == null) {
                 break;
             }
-            List<String> values = new ArrayList<>();
-            row.cellIterator().forEachRemaining(cell -> {
+
+            // 行或列数据初始化
+            List<String> values = null;
+            if (table.columns == null) {
+                values = new ArrayList<>(Arrays.asList(new String[row.getLastCellNum()]));
+                table.columns = values;
+                table.columnTypes = table.columns.stream().map(x -> ColumnType.TEXT).collect(Collectors.toList());
+            } else {
+                values = new ArrayList<>(Arrays.asList(new String[table.columns.size()]));
+                table.rows.add(values);
+            }
+
+            // 读取单元格数据
+            for (int columnIndex = 0; columnIndex < values.size(); ++columnIndex) {
+                Cell cell = row.getCell(columnIndex);
                 if (cell == null) {
-                    values.add("");
-                    return;
+                    values.set(columnIndex, "");
+                    continue;
                 }
 
                 String value = cell.toString();
@@ -74,32 +88,43 @@ public class XlsImporter implements Importer {
                     }
                 }
 
-                values.add(value);
-            });
+                values.set(columnIndex, value);
+            }
+        }
 
-            if (table.columns == null) {
-                // 去掉后面空的列名
-                for (int index = values.size() - 1; index >= 0; --index) {
-                    if (StringUtils.isBlank(values.get(index))) {
-                        values.remove(index);
-                    }
-                }
-
-                table.columns = values;
-                table.columnTypes = values.stream().map(x -> ColumnType.TEXT).collect(Collectors.toList());
+        // 剔除空列头
+        for (int columnIndex = table.columns.size() - 1; columnIndex >= 0; --columnIndex) {
+            if (!StringUtils.isBlank(table.columns.get(columnIndex))) {
                 continue;
             }
 
-            // 自动补充数据列以满足列的个数
-            int lackCount = table.columns.size() - values.size();
-            for (int index = 0; index < lackCount; ++index) {
-                values.add("");
-            }
-
-            List<String> values2 = values.subList(0, table.columns.size());
-            table.rows.add(values2);
+            table.columns.remove(columnIndex);
+            int columnIndex2 = columnIndex;
+            table.rows.forEach(row -> {
+                row.remove(columnIndex2);
+            });
         }
 
+        // 清理后面的空行
+        for (int rowIndex = table.rows.size() - 1; rowIndex >= 0; --rowIndex) {
+            List<String> row = table.rows.get(rowIndex);
+
+            // 检查该行是否为空行
+            boolean isEmptyRow = true;
+            for (int columnIndex = 0; columnIndex < row.size(); ++columnIndex) {
+                if (!StringUtils.isBlank(row.get(columnIndex))) {
+                    isEmptyRow = false;
+                    break;
+                }
+            }
+
+            // 不再继续检查处理中间的空行了, 不然行号不对.
+            if (!isEmptyRow) {
+                break;
+            }
+
+            table.rows.remove(rowIndex);
+        }
 
         return table;
     }
