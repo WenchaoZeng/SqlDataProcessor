@@ -32,7 +32,7 @@ public class DatabaseConfigLoader {
         DatabaseConfig config = null;
 
         config = new DatabaseConfig();
-        config.name = "h2";
+        config.name = "local";
         config.url = "jdbc:h2:mem:";
         list.add(config);
 
