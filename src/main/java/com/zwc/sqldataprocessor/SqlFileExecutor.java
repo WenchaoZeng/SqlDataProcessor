@@ -1,5 +1,6 @@
 package com.zwc.sqldataprocessor;
 
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -78,6 +79,7 @@ public class SqlFileExecutor {
         // 导出
         logPrinter.accept("导出结果集" + resultName);
         String exportPath = ExportExecutor.export(resultName, dataList, filePath, exportNulls);
+        exportPath = Paths.get(exportPath).toFile().getAbsolutePath();
         logPrinter.accept("导出文件路径为: " + exportPath);
 
         // 自动打开
