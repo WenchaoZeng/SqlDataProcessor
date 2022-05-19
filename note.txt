@@ -1,4 +1,3 @@
 待开发功能:
-    兼容windows
     补全readme
     导入文件的时候支持多个sheet里的指定的一个sheet
