@@ -1,16 +1,16 @@
-package com.zwc.sqldataprocessor.core;
+package com.zwc.sqldataprocessor;
 
 import java.util.ArrayList;
 
 import java.util.List;
-import com.zwc.sqldataprocessor.Global;
-import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
-import com.zwc.sqldataprocessor.core.entity.Sql;
-import com.zwc.sqldataprocessor.core.entity.Sql.SqlType;
+
+import com.zwc.sqldataprocessor.entity.DatabaseConfig;
+import com.zwc.sqldataprocessor.entity.Sql;
+import com.zwc.sqldataprocessor.entity.Sql.SqlType;
 
 public class SqlLoader {
     public static List<Sql> loadSql(String filePath) {
-        String fileContent = Global.readFile(filePath);
+        String fileContent = FileHelper.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
         boolean exportNulls = true;
         for (String line : fileContent.split("\n")) {

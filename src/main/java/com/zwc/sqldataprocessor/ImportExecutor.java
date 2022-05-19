@@ -1,19 +1,17 @@
-package com.zwc.sqldataprocessor.core;
+package com.zwc.sqldataprocessor;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.zwc.sqldataprocessor.Global;
-import com.zwc.sqldataprocessor.core.entity.DataList;
-import com.zwc.sqldataprocessor.core.entity.DataList.ColumnType;
-import com.zwc.sqldataprocessor.core.importer.CsvImporter;
-import com.zwc.sqldataprocessor.core.importer.Importer;
-import com.zwc.sqldataprocessor.core.importer.XlsImporter;
+import com.zwc.sqldataprocessor.entity.DataList;
+import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
+import com.zwc.sqldataprocessor.importer.CsvImporter;
+import com.zwc.sqldataprocessor.importer.Importer;
+import com.zwc.sqldataprocessor.importer.XlsImporter;
 import org.apache.commons.lang3.StringUtils;
 
 public class ImportExecutor {

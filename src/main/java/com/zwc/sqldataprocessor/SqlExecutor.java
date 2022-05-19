@@ -1,8 +1,6 @@
-package com.zwc.sqldataprocessor.core;
+package com.zwc.sqldataprocessor;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -10,14 +8,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import com.zwc.sqldataprocessor.Global;
-import com.zwc.sqldataprocessor.core.entity.DataList;
-import com.zwc.sqldataprocessor.core.entity.DataList.ColumnType;
-import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
+import com.zwc.sqldataprocessor.entity.DataList;
+import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import org.apache.commons.lang3.StringUtils;
 
 public class SqlExecutor {
@@ -29,7 +22,7 @@ public class SqlExecutor {
 
     public static DataList execRawSql(String sql, String databaseName) {
 
-        Global.writeOutputFile("./current.sql", sql);
+        FileHelper.writeOutputFile("./current.sql", sql);
 
         try {
 

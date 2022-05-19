@@ -1,4 +1,4 @@
-package com.zwc.sqldataprocessor.core.entity;
+package com.zwc.sqldataprocessor.entity;
 
 public class Sql {
     public SqlType type;

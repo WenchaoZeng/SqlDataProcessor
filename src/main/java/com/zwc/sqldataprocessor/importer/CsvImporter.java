@@ -1,4 +1,4 @@
-package com.zwc.sqldataprocessor.core.importer;
+package com.zwc.sqldataprocessor.importer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.zwc.sqldataprocessor.core.entity.DataList;
-import com.zwc.sqldataprocessor.core.entity.DataList.ColumnType;
+import com.zwc.sqldataprocessor.entity.DataList;
+import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;

@@ -1,4 +1,4 @@
-package com.zwc.sqldataprocessor.core.entity;
+package com.zwc.sqldataprocessor.entity;
 
 import java.io.Serializable;
 

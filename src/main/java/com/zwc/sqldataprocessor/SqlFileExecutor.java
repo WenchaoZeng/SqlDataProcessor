@@ -1,20 +1,14 @@
-package com.zwc.sqldataprocessor.core;
+package com.zwc.sqldataprocessor;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import java.util.List;
 
-import com.zwc.sqldataprocessor.Global;
-import com.zwc.sqldataprocessor.Log;
-import com.zwc.sqldataprocessor.core.entity.DataList;
-import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
-import com.zwc.sqldataprocessor.core.entity.Sql;
-import com.zwc.sqldataprocessor.core.entity.Sql.SqlType;
-import com.zwc.sqldataprocessor.core.exporter.CsvExporter;
+import com.zwc.sqldataprocessor.entity.DataList;
+import com.zwc.sqldataprocessor.entity.Sql;
+import com.zwc.sqldataprocessor.entity.Sql.SqlType;
 
 public class SqlFileExecutor {
 
@@ -87,7 +81,7 @@ public class SqlFileExecutor {
         logPrinter.accept("导出文件路径为: " + exportPath);
 
         // 自动打开
-        Global.openFile(exportPath);
+        FileHelper.openFile(exportPath);
     }
 
     static void printSqlStatus(String resultName, DataList dataList, Consumer<String> logPrinter, long startTime) {

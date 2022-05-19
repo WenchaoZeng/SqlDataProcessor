@@ -1,11 +1,10 @@
-package com.zwc.sqldataprocessor.core.exporter;
+package com.zwc.sqldataprocessor.exporter;
 
 import java.io.IOException;
 
 import java.util.List;
 
-import com.zwc.sqldataprocessor.Global;
-import com.zwc.sqldataprocessor.core.entity.DataList;
+import com.zwc.sqldataprocessor.entity.DataList;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 

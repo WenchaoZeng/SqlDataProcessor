@@ -1,4 +1,4 @@
-package com.zwc.sqldataprocessor.core.importer;
+package com.zwc.sqldataprocessor.importer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.zwc.sqldataprocessor.core.entity.DataList;
-import com.zwc.sqldataprocessor.core.entity.DataList.ColumnType;
+import com.zwc.sqldataprocessor.entity.DataList;
+import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;

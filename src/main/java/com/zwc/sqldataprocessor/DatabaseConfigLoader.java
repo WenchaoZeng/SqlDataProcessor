@@ -1,4 +1,4 @@
-package com.zwc.sqldataprocessor.core;
+package com.zwc.sqldataprocessor;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,39 +13,13 @@ import java.util.Map;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
-import com.zwc.sqldataprocessor.Global;
-import com.zwc.sqldataprocessor.Log;
-import com.zwc.sqldataprocessor.core.entity.DatabaseConfig;
+import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 
 public class DatabaseConfigLoader {
 
     public static String path = "./databases.txt";
     static List<DatabaseConfig> databaseConfigs = null;
     static Map<String, Connection> conns = null;
-
-    public static void initializeDefaultConfig() {
-        if (Files.exists(Paths.get(path))) {
-            return;
-        }
-
-        List<DatabaseConfig> list = new ArrayList<>();
-        DatabaseConfig config = null;
-
-        config = new DatabaseConfig();
-        config.name = "local";
-        config.url = "jdbc:h2:mem:";
-        list.add(config);
-
-        config = new DatabaseConfig();
-        config.name = "local_mysql";
-        config.url = "jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterset=utf-8";
-        config.userName = "root";
-        config.password = "123456";
-        list.add(config);
-
-        String fileContent = JSON.toJSONString(list, SerializerFeature.PrettyFormat);
-        Global.writeFile(path, fileContent);
-    }
 
     public static Connection getConn(String databaseName) {
         if (conns == null) {
@@ -87,11 +61,37 @@ public class DatabaseConfigLoader {
             return;
         }
 
-        String fileContent = Global.readFile(path);
+        initializeDefaultConfig();
+
+        String fileContent = FileHelper.readFile(path);
         databaseConfigs = JSON.parseArray(fileContent, DatabaseConfig.class);
         for (DatabaseConfig dbConfig : databaseConfigs) {
             dbConfig.url += "&allowMultiQueries=true";
         }
+    }
+
+    static void initializeDefaultConfig() {
+        if (Files.exists(Paths.get(path))) {
+            return;
+        }
+
+        List<DatabaseConfig> list = new ArrayList<>();
+        DatabaseConfig config = null;
+
+        config = new DatabaseConfig();
+        config.name = "local";
+        config.url = "jdbc:h2:mem:";
+        list.add(config);
+
+        config = new DatabaseConfig();
+        config.name = "local_mysql";
+        config.url = "jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterset=utf-8";
+        config.userName = "root";
+        config.password = "123456";
+        list.add(config);
+
+        String fileContent = JSON.toJSONString(list, SerializerFeature.PrettyFormat);
+        FileHelper.writeFile(path, fileContent);
     }
 
     public static void closeConnections() {
@@ -102,8 +102,8 @@ public class DatabaseConfigLoader {
         for (Connection conn : conns.values()) {
             try {
                 conn.close();
-            } catch (Exception ex) {
-                Log.error(ex);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
             }
         }
 
