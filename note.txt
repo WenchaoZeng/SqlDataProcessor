@@ -1,4 +1,3 @@
 待开发功能:
-    支持windows命令行
-    补全readme
     导入文件的时候支持多个sheet里的指定的一个sheet
+    在注释里指定 $table 会导致sql报错.
