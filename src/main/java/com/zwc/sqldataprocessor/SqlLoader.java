@@ -14,9 +14,9 @@ public class SqlLoader {
         List<Sql> sqlList = new ArrayList<>();
         boolean exportNulls = true;
         for (String line : fileContent.split("\n")) {
-            line = line.trim();
 
             if (line.startsWith("# ")) {
+                line = line.trim();
 
                 if (line.startsWith("# end")) {
                     Sql endSql = new Sql();
