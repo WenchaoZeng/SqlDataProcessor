@@ -16,7 +16,7 @@
 
 # 数据库配置文件
 
-在当前目录下, 文件名称为: `databases.txt`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个内存数据库, 名称为 `local`.
+在当前目录下, 文件名称为: `databases.txt`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个[h2](http://www.h2database.com/html/commands.html) 内存数据库, 名称为 `local`, 可以做简单的测试和使用.
 
 # 文件结构和语法定义
 
@@ -134,6 +134,4 @@ from test_table2
 ;
 ```
 
-## 使用 `# no export nulls` 来指定在导出文件的时候, null被导出为空白, 和空白字符串一样.
-
-## 使用 `# no export nulls` 来指定在导出文件的时候, null被导出为`<null>`, 这样可以看出来具体哪个是null值, 而不是空字符串.
+## 默认情况下, 值为null会在导出时候显示成空字符串. 可以使用 `# export nulls` 来指定在导出文件的时候, null被导出为`<null>`, 这样可以看出来具体哪个是null值, 而不是空字符串. 然后, 后续可以使用 `# no export nulls` 来恢复默认行为, 即null被导出为空白, 和空字符串一样.
