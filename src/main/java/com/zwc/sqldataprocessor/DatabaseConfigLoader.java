@@ -17,7 +17,7 @@ import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 
 public class DatabaseConfigLoader {
 
-    public static String path = "./databases.txt";
+    public static String path = "./databases.json";
     static List<DatabaseConfig> databaseConfigs = null;
     static Map<String, Connection> conns = null;
 

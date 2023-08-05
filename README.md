@@ -2,9 +2,34 @@
 
 一个基于sql的数据处理工具, 可以通过写sql的方式对excel, csv, 跨库mysql表等进行数据处理和加工.
 
-[点击下载](https://github.com/WenchaoZeng/SqlDataProcessor/releases)
-
 欢迎反馈问题, 提出建议, 甚至是直接贡献代码 (参与进来, 这是最好的方式. :D).
+
+# 下载和运行
+
+从 [releases](https://github.com/WenchaoZeng/SqlDataProcessor/releases) 里面下载最新的zip包, 解压到一个特定目录.
+
+从命令行进入目录, 执行下面命令:
+
+```shell
+./start.sh /你的sql文件路径/文件名称.sql
+```
+
+正常执行的话, 显示结果类似这样:
+
+```text
+~/xxxx$ ./start.sh /Users/xxx/test.sql
+执行:  /Users/xxx/test.sql
+==============================
+SQL: local
+select 1 as a;
+
+结果集: table, 行数: 1, 耗时: 149毫秒
+==============================
+导出结果集table
+导出文件路径为: /Users/xxx/SqlDataProcessor/./output/./table.csv
+```
+
+正常情况下结果文件会自动打开的. 如果没有自动打开的话, 可以手动进入output目录, 然后双击里面的csv文件看是不是没有设置默认打开方式. 设置好默认打开方式后, 后续在执行就会自动打开了.
 
 # 使用场景
 
@@ -16,7 +41,7 @@
 
 # 数据库配置文件
 
-在当前目录下, 文件名称为: `databases.txt`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个 [h2](http://www.h2database.com/html/commands.html) 内存数据库, 名称为 `local`, 可以做简单的测试和使用.
+在当前目录下, 文件名称为: `databases.json`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个 [h2](http://www.h2database.com/html/commands.html) 内存数据库, 名称为 `local`, 可以做简单的测试和使用.
 
 # 文件结构和语法定义
 
@@ -89,6 +114,8 @@ select * from $table temp;
 ```
 
 ## 使用 `# export`  来导出上一个执行的结果集
+
+默认情况下, 最后一个执行的结果集会被自动导出和打开的. `export` 这个命令主要用途是用来在一个sql文件的运行阶段导出各个不同的结果集, 或者想自己执行结果文件的名称和路径.
 
 ```sql
 -- 使用默认路径和文件名

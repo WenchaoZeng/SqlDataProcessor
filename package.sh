@@ -9,4 +9,7 @@ cp ./target/sqldataprocessor-0.0.0-SNAPSHOT/lib/* ./target/release/lib/
 cp ./start.sh ./target/release
 
 # 打包
-zip -r9 ./target/release/java_SqlDataProcessor.zip ./target/release/*
+oldPath=$(pwd)
+cd ./target/release
+zip -r9 ./java_SqlDataProcessor.zip ./*
+cd $oldPath
