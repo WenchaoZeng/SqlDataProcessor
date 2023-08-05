@@ -8,6 +8,12 @@
 
 从 [releases](https://github.com/WenchaoZeng/SqlDataProcessor/releases) 里面下载最新的zip包, 解压到一个特定目录.
 
+运行需要java 1.8版本以上运行时环境, 请使用下面命令来检查你是否已经安装java运行时环境并且版本是1.8以上的.
+
+```shell
+java --version
+```
+
 从命令行进入目录, 执行下面命令:
 
 ```shell
