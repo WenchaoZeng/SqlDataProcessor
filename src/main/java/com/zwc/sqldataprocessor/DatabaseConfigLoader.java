@@ -79,12 +79,12 @@ public class DatabaseConfigLoader {
         DatabaseConfig config = null;
 
         config = new DatabaseConfig();
-        config.name = "local";
+        config.name = "h2";
         config.url = "jdbc:h2:mem:";
         list.add(config);
 
         config = new DatabaseConfig();
-        config.name = "local_mysql";
+        config.name = "mysql";
         config.url = "jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterset=utf-8";
         config.userName = "root";
         config.password = "123456";
