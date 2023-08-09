@@ -1,5 +1,7 @@
 package com.zwc.sqldataprocessor;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class SqlDataProcessor {
     public static void main(String[] args) throws Exception {
 
@@ -7,7 +9,7 @@ public class SqlDataProcessor {
         DatabaseConfigLoader.initializeDefaultConfig();
 
         // 命令行模式
-        if (args.length > 0) {
+        if (args.length > 0 && StringUtils.isNotBlank(args[0]) && args[0].contains(".")) {
             String filePath = args[0];
 
             SqlFileExecutor.exec(filePath, msg -> {
@@ -16,6 +18,6 @@ public class SqlDataProcessor {
             return;
         }
 
-        System.out.println("sql文件路径缺失");
+        System.out.println("缺少sql文件路径");
     }
 }
