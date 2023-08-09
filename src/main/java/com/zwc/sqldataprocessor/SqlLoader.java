@@ -12,7 +12,7 @@ public class SqlLoader {
     public static List<Sql> loadSql(String filePath) {
         String fileContent = FileHelper.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
-        boolean exportNulls = true;
+        boolean exportNulls = false;
         for (String line : fileContent.split("\n")) {
 
             if (line.startsWith("# ")) {
