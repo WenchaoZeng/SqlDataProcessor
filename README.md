@@ -54,7 +54,7 @@ select 1 as a;
 
 # 数据库配置文件
 
-在当前目录下, 文件名称为: `databases.json`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个 [h2](http://www.h2database.com/html/commands.html) 内存数据库, 名称为 `local`, 可以做简单的测试和使用.
+在当前目录下, 文件名称为: `databases.json`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个 [h2](http://www.h2database.com/html/commands.html) 内存数据库, 名称为 `h2`, 可以做简单的测试和使用.
 
 # SQL文件结构和语法定义
 
