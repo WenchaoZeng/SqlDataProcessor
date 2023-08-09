@@ -60,14 +60,17 @@ public class FileHelper {
     }
 
     public static void openFile(String path) {
+        String[] cmdarray;
         String os = System.getProperty("os.name");
-        String cmd = "open " + path;
         if (os.contains("Windows")) {
             path  = path.replace("/", "\\");
-            cmd = "explorer.exe " + path;
+            cmdarray = new String[] { "explorer.exe", path };
+        } else {
+            cmdarray = new String[] { "open", path };
         }
+
         try {
-            Runtime.getRuntime().exec(cmd);
+            Runtime.getRuntime().exec(cmdarray);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
