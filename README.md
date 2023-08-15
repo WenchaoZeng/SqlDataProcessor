@@ -62,11 +62,18 @@ select 1 as a;
 
 ## `# import` 导入一个xls, xlsx或csv文件
 
-可以在文件名后面添加 `as $xxx` 的方式来指定结果集的名称, 否则默认为$table.
+可以在文件名后面添加 ` as $xxx` 的方式来指定结果集的名称, 否则默认为$table.
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx
 # import /Users/xxx/Downloads/xxx.xlsx as $table2
+```
+
+如果想指定导入具体的一个sheet, 可以这样:
+
+```sql
+# import /Users/xxx/Downloads/xxx.xlsx[sheet名称1]
+# import /Users/xxx/Downloads/xxx.xlsx[sheet名称2] as $table2
 ```
 
 ## 使用 `# xxx` 来指定一个数据库连接名称和紧跟着一个或多个SQL语句, 以最后一个SQL语句执行结果作为本次的结果
