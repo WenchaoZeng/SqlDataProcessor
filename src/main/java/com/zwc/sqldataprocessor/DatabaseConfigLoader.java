@@ -71,7 +71,9 @@ public class DatabaseConfigLoader {
         String fileContent = FileHelper.readFile(path);
         databaseConfigs = JSON.parseArray(fileContent, DatabaseConfig.class);
         for (DatabaseConfig dbConfig : databaseConfigs) {
-            dbConfig.url += "&allowMultiQueries=true";
+            if (isMySql(dbConfig.name)) {
+                dbConfig.url += "&allowMultiQueries=true";
+            }
         }
     }
 
@@ -85,7 +87,7 @@ public class DatabaseConfigLoader {
 
         config = new DatabaseConfig();
         config.name = "h2";
-        config.url = "jdbc:h2:mem:";
+        config.url = "jdbc:h2:mem:;DATABASE_TO_UPPER=FALSE";
         list.add(config);
 
         config = new DatabaseConfig();
