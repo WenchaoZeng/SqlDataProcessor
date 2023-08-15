@@ -107,23 +107,48 @@ public class SqlExecutor {
     }
 
     static String renderSql(String sql, Map<String, DataList> tables) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        for (String sqlLine : sql.split("\n")) {
 
-        for (String tableName : tables.keySet()) {
-            if (sql.contains("$" + tableName)) {
+            // 对于注释行不需要解析数据集
+            String sqlLineTrim = sqlLine.trim();
+            if (sqlLineTrim.startsWith("-- ") || sqlLineTrim.startsWith("#")) {
+                sqlBuilder.append(sqlLine);
+                sqlBuilder.append("\n");
+                continue;
+            }
+
+            // 查找数据集关键字
+            List<String> tableNames = new ArrayList<>();
+            for (String tableName : tables.keySet()) {
+                if (sqlLine.contains("$" + tableName + " ")) {
+                    tableNames.add(tableName);
+                }
+            }
+
+            // 读取数据集
+            for (String tableName : tableNames) {
                 DataList table = tables.get(tableName);
                 if (table == null) {
                     throw new RuntimeException("结果集$" + tableName + "不存在.");
                 }
+
+                // 构建数据集sql语句
                 StringBuilder builder = new StringBuilder();
                 builder.append("(\n");
                 String tableSelectSql = renderSelectSql(table);
                 builder.append(tableSelectSql);
-                builder.append(")");
-                sql = sql.replace("$" + tableName, builder.toString());
+                builder.append(") ");
+
+                // 替换到原sql里
+                sqlLine = sqlLine.replace("$" + tableName + " ", builder.toString());
             }
+
+            sqlBuilder.append(sqlLine);
+            sqlBuilder.append("\n");
         }
 
-        return sql;
+        return sqlBuilder.toString();
     }
 
     static String renderSelectSql(DataList table) {

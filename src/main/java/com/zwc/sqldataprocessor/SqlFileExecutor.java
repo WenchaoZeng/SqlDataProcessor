@@ -77,10 +77,10 @@ public class SqlFileExecutor {
 
     static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath, boolean exportNulls) {
         // 导出
-        logPrinter.accept("导出结果集" + resultName);
+        logPrinter.accept("导出结果集: " + resultName);
         String exportPath = ExportExecutor.export(resultName, dataList, filePath, exportNulls);
         exportPath = Paths.get(exportPath).toFile().getAbsolutePath();
-        logPrinter.accept("导出文件路径为: " + exportPath);
+        logPrinter.accept("导出文件路径: " + exportPath);
 
         // 自动打开
         FileHelper.openFile(exportPath);
