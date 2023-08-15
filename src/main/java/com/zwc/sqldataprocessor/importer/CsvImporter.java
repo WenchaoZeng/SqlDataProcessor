@@ -18,7 +18,7 @@ import org.apache.commons.csv.CSVRecord;
 public class CsvImporter implements Importer {
 
     @Override
-    public DataList doImport(byte[] content) {
+    public DataList doImport(byte[] content, String sheetName) {
         try {
             Reader streamReader = new InputStreamReader(new ByteArrayInputStream(content));
             CSVParser csvParser = new CSVParser(streamReader, CSVFormat.EXCEL);

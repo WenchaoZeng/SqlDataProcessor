@@ -30,7 +30,7 @@ public class XlsImporter implements Importer {
     }
 
     @Override
-    public DataList doImport(byte[] content) {
+    public DataList doImport(byte[] content, String sheetName) {
         DataList table = new DataList();
         Workbook book = null;
         try {
@@ -43,7 +43,16 @@ public class XlsImporter implements Importer {
             throw new RuntimeException(e);
         }
 
-        Sheet sheet = book.getSheetAt(0);
+        Sheet sheet;
+        if (sheetName == null) {
+            sheet = book.getSheetAt(0);
+        } else {
+            sheet = book.getSheet(sheetName);
+            if (sheet == null) {
+                throw new RuntimeException(String.format("Sheet %s 在excel文件里不存在.", sheetName));
+            }
+        }
+
         for (int rowIndex = 0; rowIndex <= sheet.getLastRowNum(); ++rowIndex) {
             Row row = sheet.getRow(rowIndex);
             if (row == null) {

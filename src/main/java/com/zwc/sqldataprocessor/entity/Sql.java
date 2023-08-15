@@ -5,6 +5,7 @@ public class Sql {
     public String databaseName;
     public String sql;
     public String fileName;
+    public String sheetName;
     public String resultName;
     public boolean exportNulls;
     public enum SqlType {

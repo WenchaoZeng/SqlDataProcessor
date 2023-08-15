@@ -15,7 +15,7 @@ import com.zwc.sqldataprocessor.importer.XlsImporter;
 import org.apache.commons.lang3.StringUtils;
 
 public class ImportExecutor {
-    public static DataList doImport(String filePath) {
+    public static DataList doImport(String filePath, String sheetName) {
 
         Importer importer = null;
         if (filePath.endsWith(".csv") || filePath.endsWith(".CSV")) {
@@ -36,7 +36,7 @@ public class ImportExecutor {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        DataList table = importer.doImport(fileContent);
+        DataList table = importer.doImport(fileContent, sheetName);
 
         removeEmptyColumn(table);
         calculateColumnType(table);

@@ -41,6 +41,8 @@ public class SqlLoader {
                     importSql.type = SqlType.IMPORT;
                     importSql.fileName = line.replace("# import ", "");
                     importSql.fileName = removeResultNameClause(importSql.fileName);
+                    importSql.sheetName = getSheetName(importSql.fileName);
+                    importSql.fileName = removeSheetName(importSql.fileName);
                     importSql.resultName = getResultName(line);
                     sqlList.add(importSql);
                     continue;
@@ -104,5 +106,27 @@ public class SqlLoader {
     static String removeResultNameClause(String line) {
         int index = line.lastIndexOf(" as $");
         return index >= 0 ? line.substring(0, index) : line;
+    }
+
+    static String getSheetName(String filePath) {
+        int extIndex = filePath.lastIndexOf(".");
+        int leftBracketIndex = filePath.indexOf("[", extIndex);
+        if (leftBracketIndex < 0) {
+            return null;
+        }
+
+        return filePath.substring(leftBracketIndex + 1)
+            .replace("]", "")
+            .trim();
+    }
+
+    static String removeSheetName(String filePath) {
+        int extIndex = filePath.lastIndexOf(".");
+        int leftBracketIndex = filePath.indexOf("[", extIndex);
+        if (leftBracketIndex < 0) {
+            return filePath.trim();
+        }
+
+        return filePath.substring(0, leftBracketIndex).trim();
     }
 }

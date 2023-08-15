@@ -45,8 +45,8 @@ public class SqlFileExecutor {
 
             // 导入
             if (sql.type == SqlType.IMPORT) {
-                logPrinter.accept("导入: " + sql.fileName);
-                dataList = ImportExecutor.doImport(sql.fileName);
+                logPrinter.accept("导入: " + sql.fileName + (sql.sheetName != null ? ", sheet: " + sql.sheetName : ""));
+                dataList = ImportExecutor.doImport(sql.fileName, sql.sheetName);
                 lastResultName = sql.resultName != null ? sql.resultName : defaultResultName;
                 tables.put(lastResultName, dataList);
                 printSqlStatus(lastResultName, dataList, logPrinter, startTime);
