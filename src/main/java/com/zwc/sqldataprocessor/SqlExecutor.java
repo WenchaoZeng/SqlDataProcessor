@@ -16,7 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 public class SqlExecutor {
 
     public static DataList exec(String sql, String databaseName, Map<String, DataList> tables) {
-        String rawSql = renderSql(sql, tables);
+        String rawSql = renderSql(sql, tables, databaseName);
         return execRawSql(rawSql, databaseName);
     }
 
@@ -106,7 +106,7 @@ public class SqlExecutor {
         return table;
     }
 
-    static String renderSql(String sql, Map<String, DataList> tables) {
+    static String renderSql(String sql, Map<String, DataList> tables, String databaseName) {
         StringBuilder sqlBuilder = new StringBuilder();
         for (String sqlLine : sql.split("\n")) {
 
@@ -136,7 +136,12 @@ public class SqlExecutor {
                 // 构建数据集sql语句
                 StringBuilder builder = new StringBuilder();
                 builder.append("(\n");
-                String tableSelectSql = renderSelectSql(table);
+                String tableSelectSql;
+                if (DatabaseConfigLoader.isH2(databaseName)) {
+                    tableSelectSql = renderSelectSqlForH2(table);
+                } else {
+                    tableSelectSql = renderSelectSql(table);
+                }
                 builder.append(tableSelectSql);
                 builder.append(") ");
 
@@ -221,4 +226,70 @@ public class SqlExecutor {
         return "select " + String.join(", ", selectColumns);
     }
 
+    static String renderSelectSqlForH2(DataList table) {
+        if (table.rows.size() <= 0) {
+            return renderEmptySelectSql(table);
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("select\n");
+        List<String> selectColumns = new ArrayList<>();
+        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
+            String name = table.columns.get(columnIndex);
+            ColumnType type = table.columnTypes.get(columnIndex);
+            String selectColumnFormat = null;
+            if (type == ColumnType.DATETIME) {
+                selectColumnFormat = "cast(C" + (columnIndex +1) + " as datetime) as `%s`";
+            } else {
+                selectColumnFormat = "C" + (columnIndex +1) + " as `%s`";
+            }
+            selectColumns.add(String.format(selectColumnFormat, name));
+        }
+        builder.append(String.join(", ", selectColumns));
+        builder.append("\n");
+        builder.append("from VALUES\n");
+
+        for (int rowIndex = 0; rowIndex < table.rows.size(); ++rowIndex) {
+            String valueClause = renderValueClause(table.rows.get(rowIndex), table);
+            builder.append(valueClause);
+            if (rowIndex < table.rows.size() - 1) {
+                builder.append(", \n");
+            }
+        }
+
+        return builder.toString();
+    }
+
+    static String renderValueClause(List<String> rowValues, DataList table) {
+        List<String> values = new ArrayList<>();
+        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
+            ColumnType type = table.columnTypes.get(columnIndex);
+            String name = table.columns.get(columnIndex);
+            String value = rowValues.get(columnIndex);
+            String selectColumnFormat = null;
+            if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
+                selectColumnFormat = "%s as `%s`";
+                if (StringUtils.isBlank(value)) {
+                    values.add(null);
+                } else {
+                    values.add(value);
+                }
+            } else if (type == ColumnType.DATETIME) {
+                if (StringUtils.isBlank(value)) {
+                    values.add(null);
+                } else {
+                    values.add("'" + value + "'");
+                }
+            } else {
+                if (value == null) {
+                    values.add(null);
+                } else {
+                    value = value.replace("\\", "\\\\");
+                    value = value.replace("'", "\\'");
+                    values.add("'" + value + "'");
+                }
+            }
+        }
+        return "(" + String.join(", ", values) + ")";
+    }
 }

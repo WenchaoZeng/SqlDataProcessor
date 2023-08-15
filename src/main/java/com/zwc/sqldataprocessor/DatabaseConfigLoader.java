@@ -47,7 +47,12 @@ public class DatabaseConfigLoader {
 
     public static boolean isMySql(String databaseName) {
         DatabaseConfig dbConfig = getDbConfig(databaseName);
-        return dbConfig != null && dbConfig.url.contains("mysql");
+        return dbConfig != null && dbConfig.url.contains("jdbc:mysql");
+    }
+
+    public static boolean isH2(String databaseName) {
+        DatabaseConfig dbConfig = getDbConfig(databaseName);
+        return dbConfig != null && dbConfig.url.contains("jdbc:h2");
     }
 
     static DatabaseConfig getDbConfig(String databaseName) {
