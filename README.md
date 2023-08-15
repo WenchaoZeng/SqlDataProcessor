@@ -2,6 +2,8 @@
 
 一个基于sql的数据处理工具, 可以通过写sql的方式对excel, csv, 跨库mysql表等进行数据处理和加工.
 
+[演示视频](https://www.bilibili.com/video/BV1ou4y1R7tj/)
+
 欢迎反馈问题, 提出建议, 甚至是直接贡献代码 (参与进来, 这是最好的方式. :D).
 
 # 下载和运行
