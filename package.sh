@@ -7,6 +7,7 @@ mkdir ./target/release
 mkdir ./target/release/lib
 cp ./target/sqldataprocessor-0.0.0-SNAPSHOT/lib/* ./target/release/lib/
 cp ./start.sh ./target/release
+cp ./start.bat ./target/release
 
 # 打包
 oldPath=$(pwd)
