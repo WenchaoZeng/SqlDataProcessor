@@ -29,6 +29,12 @@ select 1 as a;
 ./start.sh /你的sql文件路径/文件名称.sql
 ```
 
+如果是windows命令行的话, 则是:
+
+```shell
+start.bat C:\你的sql文件路径\文件名称.sql
+```
+
 正常执行的话, 显示结果类似这样:
 
 ```text
