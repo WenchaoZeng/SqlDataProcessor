@@ -68,7 +68,7 @@ public class SqlExecutor {
                 if (sqlStatementIndex > 0) {
                     msg = msg.substring(0, sqlStatementIndex);
                 }
-                throw new RuntimeException(msg);
+                throw new RuntimeException("SQL运行错误: " + msg);
             }
 
             throw new RuntimeException(ex);
