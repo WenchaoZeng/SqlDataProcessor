@@ -61,6 +61,16 @@ public class SqlExecutor {
                 return table;
             }
         } catch (Exception ex) {
+            // h2数据库会把完整的sql打印出来, 会导致错误里输出的内容太多了, 所以只需要保留错误的描述就行.
+            if (ex instanceof org.h2.jdbc.JdbcSQLSyntaxErrorException) {
+                String msg = ex.getMessage();
+                int sqlStatementIndex = msg.indexOf("SQL statement:");
+                if (sqlStatementIndex > 0) {
+                    msg = msg.substring(0, sqlStatementIndex);
+                }
+                throw new RuntimeException(msg);
+            }
+
             throw new RuntimeException(ex);
         }
     }
