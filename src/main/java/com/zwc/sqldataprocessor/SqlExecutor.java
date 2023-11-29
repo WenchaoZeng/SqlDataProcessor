@@ -161,6 +161,8 @@ public class SqlExecutor {
                             execRawSql(dataInsertSql, databaseName);
                             tableCreated = true;
                         }
+
+                        createdTempTables.add(tempTableName);
                     }
 
                     tableReplacement = tempTableName + " ";

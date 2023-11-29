@@ -26,22 +26,22 @@ public class SqlLoader {
                     continue;
                 }
 
-                if (line.startsWith("# no export nulls")) {
+                if (line.startsWith("# -exportNulls")) {
                     exportNulls = false;
                     continue;
                 }
 
-                if (line.startsWith("# export nulls")) {
+                if (line.startsWith("# +exportNulls")) {
                     exportNulls = true;
                     continue;
                 }
 
-                if (line.startsWith("# use temp tables")) {
+                if (line.startsWith("# +tempTables")) {
                     useTempTables = true;
                     continue;
                 }
 
-                if (line.startsWith("# no use temp tables")) {
+                if (line.startsWith("# -tempTables")) {
                     useTempTables = false;
                     continue;
                 }
