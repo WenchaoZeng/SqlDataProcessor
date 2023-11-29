@@ -19,40 +19,41 @@ public class SqlLoader {
 
             if (line.startsWith("# ")) {
                 line = line.trim();
+                String lowerLine = line.toLowerCase();
 
-                if (line.startsWith("# end")) {
+                if (lowerLine.equals("# end")) {
                     Sql endSql = new Sql();
                     endSql.type = SqlType.END;
                     sqlList.add(endSql);
                     continue;
                 }
 
-                if (line.startsWith("# -exportNulls")) {
-                    exportNulls = false;
-                    continue;
-                }
-
-                if (line.startsWith("# +exportNulls")) {
+                if (lowerLine.equals("# exportnulls")) {
                     exportNulls = true;
                     continue;
                 }
 
-                if (line.startsWith("# +exportXlsx")) {
+                if (lowerLine.equals("# -exportnulls")) {
+                    exportNulls = false;
+                    continue;
+                }
+
+                if (lowerLine.equals("# exportxlsx")) {
                     exportXlsx = true;
                     continue;
                 }
 
-                if (line.startsWith("# -exportXlsx")) {
+                if (lowerLine.equals("# -exportxlsx")) {
                     exportXlsx = false;
                     continue;
                 }
 
-                if (line.startsWith("# +tempTables")) {
+                if (lowerLine.equals("# temptables")) {
                     useTempTables = true;
                     continue;
                 }
 
-                if (line.startsWith("# -tempTables")) {
+                if (lowerLine.equals("# -temptables")) {
                     useTempTables = false;
                     continue;
                 }
