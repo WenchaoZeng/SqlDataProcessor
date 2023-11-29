@@ -150,8 +150,12 @@ public class SqlExecutor {
                     String tempTableName = "_temp_" + tableName.replace("$", "");
 
                     if (!createdTempTables.contains(tempTableName)) {
-                        execRawSql(String.format("drop temporary table if exists %s;", tempTableName), databaseName);
-                        String createTempTableSql = renderCreateTempTableSql(table, tempTableName);
+                        String sqlFormat = "drop temporary table if exists %s;";
+                        if (DatabaseConfigLoader.isH2(databaseName)) {
+                            sqlFormat = "drop table if exists %s;";
+                        }
+                        execRawSql(String.format(sqlFormat, tempTableName), databaseName);
+                        String createTempTableSql = renderCreateTempTableSql(table, tempTableName, databaseName);
                         execRawSql(createTempTableSql, databaseName);
 
                         // 分批导入数据
@@ -186,7 +190,7 @@ public class SqlExecutor {
         return sqlBuilder.toString();
     }
 
-    static String renderCreateTempTableSql(DataList table, String tableName) {
+    static String renderCreateTempTableSql(DataList table, String tableName, String databaseName) {
         StringBuilder builder = new StringBuilder();
         builder.append("create temporary table " + tableName + "(");
         for (int index = 0; index < table.columns.size(); ++index) {
@@ -207,7 +211,10 @@ public class SqlExecutor {
                 builder.append(",");
             }
         }
-        builder.append(") collate utf8mb4_general_ci CHARACTER SET utf8mb4;");
+        builder.append(") ");
+        if (DatabaseConfigLoader.isMySql(databaseName)) {
+            builder.append("collate utf8mb4_general_ci CHARACTER SET utf8mb4");
+        }
         return builder.toString();
     }
 
