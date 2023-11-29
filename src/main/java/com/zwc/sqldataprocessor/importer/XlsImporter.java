@@ -13,8 +13,9 @@ import java.util.stream.Collectors;
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -37,7 +38,7 @@ public class XlsImporter implements Importer {
             if (isXlsx) {
                 book = new XSSFWorkbook(new ByteArrayInputStream(content));
             } else {
-                book = WorkbookFactory.create(new NPOIFSFileSystem(new ByteArrayInputStream(content)));
+                book = WorkbookFactory.create(new POIFSFileSystem(new ByteArrayInputStream(content)));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -79,7 +80,7 @@ public class XlsImporter implements Importer {
                 }
 
                 String value = cell.toString();
-                if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                if (cell.getCellType() == CellType.NUMERIC) {
                     if (value.contains("E")) {
                         double doubleValue = Double.parseDouble(value);
                         NumberFormat numberFormat = NumberFormat.getInstance();
@@ -88,7 +89,7 @@ public class XlsImporter implements Importer {
                     } else if (value.endsWith(".0")) {
                         value = value.substring(0, value.lastIndexOf("."));
                     }
-                } else if (cell.getCellType() == Cell.CELL_TYPE_FORMULA) {
+                } else if (cell.getCellType() == CellType.FORMULA) {
                     DecimalFormat decimalFormat = new DecimalFormat("0");
                     try {
                         value = decimalFormat.format(cell.getNumericCellValue());

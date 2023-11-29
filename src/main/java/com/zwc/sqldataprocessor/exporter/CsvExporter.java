@@ -8,7 +8,7 @@ import com.zwc.sqldataprocessor.entity.DataList;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
-public class CsvExporter {
+public class CsvExporter implements Exporter {
 
     public byte[] export(DataList table, boolean exportNulls) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -29,6 +29,11 @@ public class CsvExporter {
         }
 
         return stringBuilder.toString().getBytes();
+    }
+
+    @Override
+    public String getExtension() {
+        return "csv";
     }
 
 }

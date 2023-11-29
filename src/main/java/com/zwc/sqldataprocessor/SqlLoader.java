@@ -13,6 +13,7 @@ public class SqlLoader {
         String fileContent = FileHelper.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
         boolean exportNulls = false;
+        boolean exportXlsx = false;
         boolean useTempTables = false;
         for (String line : fileContent.split("\n")) {
 
@@ -33,6 +34,16 @@ public class SqlLoader {
 
                 if (line.startsWith("# +exportNulls")) {
                     exportNulls = true;
+                    continue;
+                }
+
+                if (line.startsWith("# +exportXlsx")) {
+                    exportXlsx = true;
+                    continue;
+                }
+
+                if (line.startsWith("# -exportXlsx")) {
+                    exportXlsx = false;
                     continue;
                 }
 
@@ -64,6 +75,7 @@ public class SqlLoader {
                     Sql exportSql = new Sql();
                     exportSql.type = SqlType.EXPORT;
                     exportSql.exportNulls = exportNulls;
+                    exportSql.exportXlsx = exportXlsx;
                     String exportFilePath = line.replace("# export", "").trim();
                     if (!exportFilePath.equals("")) {
                         exportSql.fileName = exportFilePath;
@@ -104,6 +116,7 @@ public class SqlLoader {
             Sql exportSql = new Sql();
             exportSql.type = SqlType.EXPORT;
             exportSql.exportNulls = exportNulls;
+            exportSql.exportXlsx = exportXlsx;
             sqlList.add(exportSql);
         }
 
