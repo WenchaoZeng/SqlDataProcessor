@@ -151,15 +151,15 @@ public class SqlExecutor {
 
                     if (!createdTempTables.contains(tempTableName)) {
                         execRawSql(String.format("drop temporary table if exists %s;", tempTableName), databaseName);
+                        String createTempTableSql = renderCreateTempTableSql(table, tempTableName);
+                        execRawSql(createTempTableSql, databaseName);
 
                         // 分批导入数据
                         List<DataList> dataLists = table.split(10000);
-                        boolean tableCreated = false;
                         for (DataList dataList : dataLists) {
-                            String dataInsertSql = tableCreated ? "insert into " + tempTableName + " " : "create temporary table " + tempTableName + " as ";
+                            String dataInsertSql = "insert into " + tempTableName + " ";
                             dataInsertSql += renderSelectSql(dataList, databaseName);
                             execRawSql(dataInsertSql, databaseName);
-                            tableCreated = true;
                         }
 
                         createdTempTables.add(tempTableName);
@@ -184,6 +184,31 @@ public class SqlExecutor {
         }
 
         return sqlBuilder.toString();
+    }
+
+    static String renderCreateTempTableSql(DataList table, String tableName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("create temporary table " + tableName + "(");
+        for (int index = 0; index < table.columns.size(); ++index) {
+            builder.append("`" + table.columns.get(index) + "` ");
+
+            ColumnType columnType = table.columnTypes.get(index);
+            if (columnType == ColumnType.INT) {
+                    builder.append("bigint");
+            } else if (columnType == ColumnType.DECIMAL) {
+                builder.append("decimal");
+            } else if (columnType == ColumnType.DATETIME) {
+                builder.append("datetime");
+            } else {
+                builder.append("LONGTEXT");
+            }
+
+            if (index != table.columns.size() - 1) {
+                builder.append(",");
+            }
+        }
+        builder.append(") collate utf8mb4_general_ci CHARACTER SET utf8mb4;");
+        return builder.toString();
     }
 
     static String renderSelectSql(DataList table, String databaseName) {
