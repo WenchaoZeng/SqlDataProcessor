@@ -13,6 +13,7 @@ public class SqlLoader {
         String fileContent = FileHelper.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
         boolean exportNulls = false;
+        boolean useTempTables = false;
         for (String line : fileContent.split("\n")) {
 
             if (line.startsWith("# ")) {
@@ -32,6 +33,16 @@ public class SqlLoader {
 
                 if (line.startsWith("# export nulls")) {
                     exportNulls = true;
+                    continue;
+                }
+
+                if (line.startsWith("# use temp tables")) {
+                    useTempTables = true;
+                    continue;
+                }
+
+                if (line.startsWith("# no use temp tables")) {
+                    useTempTables = false;
                     continue;
                 }
 
@@ -71,6 +82,7 @@ public class SqlLoader {
                     sql.databaseName = databaseName;
                     sql.sql = "";
                     sql.resultName = getResultName(line);
+                    sql.useTempTables = useTempTables;
                     sqlList.add(sql);
                     continue;
                 }

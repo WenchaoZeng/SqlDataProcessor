@@ -56,7 +56,7 @@ public class SqlFileExecutor {
             if (sql.type == SqlType.SQL) {
                 logPrinter.accept("SQL: " + sql.databaseName);
                 logPrinter.accept(sql.sql);
-                dataList = SqlExecutor.exec(sql.sql, sql.databaseName, tables);
+                dataList = SqlExecutor.exec(sql.sql, sql.databaseName, tables, sql.useTempTables);
                 lastResultName = sql.resultName != null ? sql.resultName : defaultResultName;
                 tables.put(lastResultName, dataList);
                 printSqlStatus(lastResultName, dataList, logPrinter, startTime);
