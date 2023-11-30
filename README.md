@@ -62,11 +62,11 @@ select 1 as a;
 
 # 数据库配置文件
 
-在当前目录下, 文件名称为: `databases.json`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个 [h2](http://www.h2database.com/html/commands.html) 内存数据库, 名称为 `h2`, 可以做简单的测试和使用.
+在当前目录下, 文件名称为: `databases.json`. 首次运行时会自动生成这个文件的默认内容, 默认自带一个 [h2](http://www.h2database.com/html/commands.html) 内存数据库, 名称为 `h2`, 可以做简单的测试和使用. 推荐自己配置一个mysql数据库使用.
 
 # SQL文件结构和语法定义
 
-文件后缀建议为sql, 以让文本编辑器支持sql语法的高亮显示.
+文件后缀建议为sql, 以让你的文本编辑器支持sql语法的高亮显示.
 
 ## `# import` 导入一个xls, xlsx或csv文件
 
@@ -115,7 +115,7 @@ from test_table temp;
 
 ## 在SQL中可以使用 `$xxx` 的方式来引用之前的结果集
 
-注意: 一定要在结果集后面加一个自己的自定义名称, 结果集是以一个sub query的方式运行的, sql标准要求一定要指定一个别名的.
+注意: 一定要在结果集后面加一个自己的自定义名称, 结果集是以一个子查询(或临时表)的方式运行的, sql标准要求子查询一定要指定一个别名.
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx
@@ -189,6 +189,18 @@ from test_table2
 ;
 ```
 
-## 关于空值null的导出显示控制
+## 空值null的导出显示控制
 
-默认情况下, 值为null会在导出时候显示成空字符串. 可以使用 `# export nulls` 来指定在导出文件的时候, null被导出为`<null>`, 这样可以看出来具体哪个是null值, 区分与空字符串. 然后, 后续可以使用 `# no export nulls` 来恢复默认行为, 即null被导出为空白, 和空字符串显示一样.
+默认情况下, 值为null会在导出时候显示成空字符串. 可以使用`# exportnulls`来指定在导出文件的时候, null被导出为`<null>`, 这样可以看出来具体哪个是null值, 与空字符串作区分. 可以使用`# -exportnulls`来恢复默认行为, 即null被导出为空白, 和空字符串显示一样.
+
+## 导出xlsx格式
+
+使用`# exportxlsx`设置xlsx导出格式, 使用`# -exportxlsx`关闭xlsx导出格式. 默认: 关闭xlsx导出格式, 即导出格式为csv.
+
+## 临时表模式
+
+默认情况下, 如果一个sql里引用了结果集, 结果集会以子查询的方式嵌入到sql中. 如果结果集数据量很大, 会导致子查询的sql很大, 从而导致超出java里String的最大容量, 或者超出mysql库的最大sql长度.
+
+使用临时表模式, 可以预先把结果集的数据导入到临时表中, 然后sql中直接从临时表查询结果集, 这样sql就比较短. 
+
+使用`# temptables`打开临时表模式, 使用`# -temptables`关闭临时表模式. 默认: 关闭临时表模式.
