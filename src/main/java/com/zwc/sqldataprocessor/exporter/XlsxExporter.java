@@ -23,7 +23,7 @@ public class XlsxExporter implements Exporter {
     public byte[] export(DataList table, boolean exportNulls) {
         LinkedHashMap<String, DataList> tables = new LinkedHashMap<>();
         tables.put("sheet1", table);
-        return export(tables);
+        return export(tables, exportNulls);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class XlsxExporter implements Exporter {
         return "xlsx";
     }
 
-    public byte[] export(LinkedHashMap<String, DataList> tables) {
+    public byte[] export(LinkedHashMap<String, DataList> tables, boolean exportNulls) {
         try (SXSSFWorkbook workbook = new SXSSFWorkbook(1000)) {
             for (String sheetName : tables.keySet()) {
                 DataList table = tables.get(sheetName);
@@ -47,18 +47,21 @@ public class XlsxExporter implements Exporter {
                 headFont.setBold(true);
                 headStyle.setFont(headFont);
                 int index = 0;
-                writeRow(sheet, index, table.columns, headStyle);
+                writeRow(sheet, index, table.columns, headStyle, false);
 
                 // 写入行数据
                 for (List<String> row : table.rows) {
                     index++;
-                    writeRow(sheet, index, row, null);
+                    writeRow(sheet, index, row, null, exportNulls);
                 }
 
                 // 检测列最大文字数
                 int[] charCounts = new int[table.columns.size()];
                 Consumer<List<String>> detectCharCount = row -> {
                     for (int columnIndex = 0; columnIndex < row.size(); ++columnIndex) {
+                        if (row.get(columnIndex) == null) {
+                            continue;
+                        }
                         int charCount = row.get(columnIndex).getBytes(Charset.forName("GBK")).length;
                         charCounts[columnIndex] = Math.max(charCounts[columnIndex], charCount);
                     }
@@ -92,14 +95,15 @@ public class XlsxExporter implements Exporter {
     /**
      * 写入行数据
      */
-    void writeRow(SXSSFSheet sheet, int rowIndex, List<String> values, CellStyle style) {
+    void writeRow(SXSSFSheet sheet, int rowIndex, List<String> values, CellStyle style, boolean exportNulls) {
         SXSSFRow row = sheet.createRow(rowIndex);
         row.setHeight((short)400);
         for (int columnIndex = 0; columnIndex < values.size(); ++columnIndex) {
             SXSSFCell cell = row.createCell(columnIndex);
 
             // 写入数据
-            cell.setCellValue(values.get(columnIndex));
+            String value = values.get(columnIndex);
+            cell.setCellValue(value == null && exportNulls ? "<null>" : value);
 
             // 设置样式
             if (style != null) {
