@@ -6,8 +6,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
@@ -15,8 +17,14 @@ import org.apache.commons.lang3.StringUtils;
 
 public class SqlExecutor {
 
-    public static DataList exec(String sql, String databaseName, Map<String, DataList> tables) {
-        String rawSql = renderSql(sql, tables, databaseName);
+    public static DataList exec(String sql, String databaseName, Map<String, DataList> tables, boolean useTempTables) {
+        String rawSql = renderSql(sql, tables, databaseName, useTempTables);
+
+        // 解除group_concat的长度限制
+        if (DatabaseConfigLoader.isMySql(databaseName)) {
+            execRawSql("SET SESSION group_concat_max_len = 1000000;", databaseName);
+        }
+
         return execRawSql(rawSql, databaseName);
     }
 
@@ -27,13 +35,6 @@ public class SqlExecutor {
         try {
 
             Connection conn = DatabaseConfigLoader.getConn(databaseName);
-
-            // 解除group_concat的长度限制
-            if (DatabaseConfigLoader.isMySql(databaseName)) {
-                try (Statement cmd = conn.createStatement()) {
-                    cmd.execute("SET SESSION group_concat_max_len = 1000000;");
-                }
-            }
 
             try (Statement cmd = conn.createStatement()) {
                 boolean hasResult = cmd.execute(sql);
@@ -116,7 +117,8 @@ public class SqlExecutor {
         return table;
     }
 
-    static String renderSql(String sql, Map<String, DataList> tables, String databaseName) {
+    static String renderSql(String sql, Map<String, DataList> tables, String databaseName, boolean useTempTables) {
+        Set<String> createdTempTables = new HashSet<>();
         StringBuilder sqlBuilder = new StringBuilder();
         for (String sqlLine : sql.split("\n")) {
 
@@ -143,20 +145,42 @@ public class SqlExecutor {
                     throw new RuntimeException("结果集$" + tableName + "不存在.");
                 }
 
-                // 构建数据集sql语句
-                StringBuilder builder = new StringBuilder();
-                builder.append("(\n");
-                String tableSelectSql;
-                if (DatabaseConfigLoader.isH2(databaseName)) {
-                    tableSelectSql = renderSelectSqlForH2(table);
-                } else {
-                    tableSelectSql = renderSelectSql(table);
+                String tableReplacement = "";
+                if (useTempTables) { // 构建临时表
+                    String tempTableName = "_temp_" + tableName.replace("$", "");
+
+                    if (!createdTempTables.contains(tempTableName)) {
+                        String sqlFormat = "drop temporary table if exists %s;";
+                        if (DatabaseConfigLoader.isH2(databaseName)) {
+                            sqlFormat = "drop table if exists %s;";
+                        }
+                        execRawSql(String.format(sqlFormat, tempTableName), databaseName);
+                        String createTempTableSql = renderCreateTempTableSql(table, tempTableName, databaseName);
+                        execRawSql(createTempTableSql, databaseName);
+
+                        // 分批导入数据
+                        List<DataList> dataLists = table.split(10000);
+                        for (DataList dataList : dataLists) {
+                            String dataInsertSql = "insert into " + tempTableName + " ";
+                            dataInsertSql += renderSelectSql(dataList, databaseName);
+                            execRawSql(dataInsertSql, databaseName);
+                        }
+
+                        createdTempTables.add(tempTableName);
+                    }
+
+                    tableReplacement = tempTableName + " ";
+                } else { // 构建数据集sql语句
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("(\n");
+                    String tableSelectSql = renderSelectSql(table, databaseName);
+                    builder.append(tableSelectSql);
+                    builder.append(") ");
+                    tableReplacement = builder.toString();
                 }
-                builder.append(tableSelectSql);
-                builder.append(") ");
 
                 // 替换到原sql里
-                sqlLine = sqlLine.replace("$" + tableName + " ", builder.toString());
+                sqlLine = sqlLine.replace("$" + tableName + " ", tableReplacement);
             }
 
             sqlBuilder.append(sqlLine);
@@ -164,6 +188,42 @@ public class SqlExecutor {
         }
 
         return sqlBuilder.toString();
+    }
+
+    static String renderCreateTempTableSql(DataList table, String tableName, String databaseName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("create temporary table " + tableName + "(");
+        for (int index = 0; index < table.columns.size(); ++index) {
+            builder.append("`" + table.columns.get(index) + "` ");
+
+            ColumnType columnType = table.columnTypes.get(index);
+            if (columnType == ColumnType.INT) {
+                    builder.append("bigint");
+            } else if (columnType == ColumnType.DECIMAL) {
+                builder.append("decimal");
+            } else if (columnType == ColumnType.DATETIME) {
+                builder.append("datetime");
+            } else {
+                builder.append("LONGTEXT");
+            }
+
+            if (index != table.columns.size() - 1) {
+                builder.append(",");
+            }
+        }
+        builder.append(") ");
+        if (DatabaseConfigLoader.isMySql(databaseName)) {
+            builder.append("collate utf8mb4_general_ci CHARACTER SET utf8mb4");
+        }
+        return builder.toString();
+    }
+
+    static String renderSelectSql(DataList table, String databaseName) {
+        if (DatabaseConfigLoader.isH2(databaseName)) {
+            return renderSelectSqlForH2(table);
+        } else {
+            return renderSelectSql(table);
+        }
     }
 
     static String renderSelectSql(DataList table) {

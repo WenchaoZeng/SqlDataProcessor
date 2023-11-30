@@ -13,25 +13,48 @@ public class SqlLoader {
         String fileContent = FileHelper.readFile(filePath);
         List<Sql> sqlList = new ArrayList<>();
         boolean exportNulls = false;
+        boolean exportXlsx = false;
+        boolean useTempTables = false;
         for (String line : fileContent.split("\n")) {
 
             if (line.startsWith("# ")) {
                 line = line.trim();
+                String lowerLine = line.toLowerCase();
 
-                if (line.startsWith("# end")) {
+                if (lowerLine.equals("# end")) {
                     Sql endSql = new Sql();
                     endSql.type = SqlType.END;
                     sqlList.add(endSql);
                     continue;
                 }
 
-                if (line.startsWith("# no export nulls")) {
+                if (lowerLine.equals("# exportnulls")) {
+                    exportNulls = true;
+                    continue;
+                }
+
+                if (lowerLine.equals("# -exportnulls")) {
                     exportNulls = false;
                     continue;
                 }
 
-                if (line.startsWith("# export nulls")) {
-                    exportNulls = true;
+                if (lowerLine.equals("# exportxlsx")) {
+                    exportXlsx = true;
+                    continue;
+                }
+
+                if (lowerLine.equals("# -exportxlsx")) {
+                    exportXlsx = false;
+                    continue;
+                }
+
+                if (lowerLine.equals("# temptables")) {
+                    useTempTables = true;
+                    continue;
+                }
+
+                if (lowerLine.equals("# -temptables")) {
+                    useTempTables = false;
                     continue;
                 }
 
@@ -53,6 +76,7 @@ public class SqlLoader {
                     Sql exportSql = new Sql();
                     exportSql.type = SqlType.EXPORT;
                     exportSql.exportNulls = exportNulls;
+                    exportSql.exportXlsx = exportXlsx;
                     String exportFilePath = line.replace("# export", "").trim();
                     if (!exportFilePath.equals("")) {
                         exportSql.fileName = exportFilePath;
@@ -71,6 +95,7 @@ public class SqlLoader {
                     sql.databaseName = databaseName;
                     sql.sql = "";
                     sql.resultName = getResultName(line);
+                    sql.useTempTables = useTempTables;
                     sqlList.add(sql);
                     continue;
                 }
@@ -92,6 +117,7 @@ public class SqlLoader {
             Sql exportSql = new Sql();
             exportSql.type = SqlType.EXPORT;
             exportSql.exportNulls = exportNulls;
+            exportSql.exportXlsx = exportXlsx;
             sqlList.add(exportSql);
         }
 

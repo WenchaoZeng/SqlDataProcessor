@@ -56,7 +56,7 @@ public class SqlFileExecutor {
             if (sql.type == SqlType.SQL) {
                 logPrinter.accept("SQL: " + sql.databaseName);
                 logPrinter.accept(sql.sql);
-                dataList = SqlExecutor.exec(sql.sql, sql.databaseName, tables);
+                dataList = SqlExecutor.exec(sql.sql, sql.databaseName, tables, sql.useTempTables);
                 lastResultName = sql.resultName != null ? sql.resultName : defaultResultName;
                 tables.put(lastResultName, dataList);
                 printSqlStatus(lastResultName, dataList, logPrinter, startTime);
@@ -64,7 +64,7 @@ public class SqlFileExecutor {
 
             // 导出
             if (sql.type == SqlType.EXPORT || sql.type == SqlType.END) {
-                doExport(lastResultName, dataList, logPrinter, sql.fileName, sql.exportNulls);
+                doExport(lastResultName, dataList, logPrinter, sql.fileName, sql.exportNulls, sql.exportXlsx);
 
                 // 提前结束
                 if (sql.type == SqlType.END) {
@@ -75,10 +75,10 @@ public class SqlFileExecutor {
         }
     }
 
-    static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath, boolean exportNulls) {
+    static void doExport(String resultName, DataList dataList, Consumer<String> logPrinter, String filePath, boolean exportNulls, boolean exportXlsx) {
         // 导出
         logPrinter.accept("导出结果集: " + resultName);
-        String exportPath = ExportExecutor.export(resultName, dataList, filePath, exportNulls);
+        String exportPath = ExportExecutor.export(resultName, dataList, filePath, exportNulls, exportXlsx);
         exportPath = Paths.get(exportPath).toFile().getAbsolutePath();
         logPrinter.accept("导出文件路径: " + exportPath);
 
