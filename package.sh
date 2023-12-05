@@ -14,3 +14,6 @@ oldPath=$(pwd)
 cd ./target/release
 zip -r9 ./java_SqlDataProcessor.zip ./*
 cd $oldPath
+
+# 自动打开
+open ./target/release
