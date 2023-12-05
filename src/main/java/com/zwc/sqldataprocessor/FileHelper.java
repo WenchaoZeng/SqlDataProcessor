@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +36,48 @@ public class FileHelper {
     }
 
     public static String writeOutputFile(String path, byte[] bytes) {
+        ensureOutputFolderExists();
 
+        path = getOutPath(path);
+        writeFile(path, bytes);
+        return path;
+    }
+
+    public static void appendOutFile(String path, String content) {
+        ensureOutputFolderExists();
+        path = getOutPath(path);
+        try {
+            Path filePath = Paths.get(path);
+            if (!Files.exists(filePath)) {
+                Files.createFile(filePath);
+            }
+            Files.write(filePath, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void deleteOutFile(String path) {
+        path = getOutPath(path);
+        try {
+            Path filePath = Paths.get(path);
+            if (!Files.exists(filePath)) {
+                return;
+            }
+            Files.delete(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static String getOutPath(String fileName) {
+        return "./output/" + fileName;
+    }
+
+    /**
+     * 创建结果目录
+     */
+    static void ensureOutputFolderExists() {
         // 创建结果目录
         try {
             Path outputDirectoryPath = Paths.get("./output");
@@ -44,10 +87,6 @@ public class FileHelper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        path = "./output/" + path;
-        writeFile(path, bytes);
-        return path;
     }
 
     public static String readFile(String path) {

@@ -1,23 +1,46 @@
 package com.zwc.sqldataprocessor;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.util.function.Consumer;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class SqlDataProcessor {
     public static void main(String[] args) throws Exception {
 
+        // 控制台和日志文件同时输出
+        String logFileName = "run.log";
+        FileHelper.deleteOutFile(logFileName);
+        Consumer<String> logPrinter = msg -> {
+            System.out.println(msg);
+            FileHelper.appendOutFile(logFileName, msg);
+            FileHelper.appendOutFile(logFileName, "\n");
+        };
+
+        try {
+            run(args, logPrinter);
+        } catch (Exception ex) {
+            // 输出异常明细
+            StringWriter stringWriter = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(stringWriter);
+            ex.printStackTrace(printWriter);
+            logPrinter.accept(stringWriter.toString());
+        }
+    }
+
+    static void run(String[] args, Consumer<String> logPrinter) {
         // 初始化DB配置
         DatabaseConfigLoader.initializeDefaultConfig();
 
         // 命令行模式
-        if (args.length > 0 && StringUtils.isNotBlank(args[0]) && args[0].contains(".")) {
-            String filePath = args[0];
-
-            SqlFileExecutor.exec(filePath, msg -> {
-                System.out.println(msg);
-            });
+        if (args.length <= 0 || StringUtils.isBlank(args[0])) {
+            logPrinter.accept("缺少sql文件路径");
             return;
         }
 
-        System.out.println("缺少sql文件路径");
+        String filePath = args[0];
+        SqlFileExecutor.exec(filePath, logPrinter);
     }
 }
