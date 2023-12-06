@@ -159,7 +159,7 @@ public class SqlExecutor {
                         execRawSql(createTempTableSql, databaseName);
 
                         // 分批导入数据
-                        List<DataList> dataLists = table.split(10000);
+                        List<DataList> dataLists = table.split(1000);
                         for (DataList dataList : dataLists) {
                             String dataInsertSql = "insert into " + tempTableName + " ";
                             dataInsertSql += renderSelectSql(dataList, databaseName);
@@ -287,7 +287,7 @@ public class SqlExecutor {
                     selectColumnFormat = "%s as `%s`";
                 } else {
                     value = value.replace("\\", "\\\\");
-                    value = value.replace("'", "\\'");
+                    value = value.replace("'", "''");
                     selectColumnFormat = "'%s' as `%s`";
                 }
             }
@@ -354,8 +354,7 @@ public class SqlExecutor {
                 if (value == null) {
                     values.add(null);
                 } else {
-                    value = value.replace("\\", "\\\\");
-                    value = value.replace("'", "\\'");
+                    value = value.replace("'", "''");
                     values.add("'" + value + "'");
                 }
             }
