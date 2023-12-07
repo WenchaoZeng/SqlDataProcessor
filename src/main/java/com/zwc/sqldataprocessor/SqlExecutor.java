@@ -233,11 +233,12 @@ public class SqlExecutor {
 
         StringBuilder builder = new StringBuilder();
         for (int rowIndex = 0; rowIndex < table.rows.size(); ++rowIndex) {
-            String selectSql = renderSelectSql(rowIndex, table);
+            boolean includeColumnName = rowIndex == 0;
+            String selectSql = renderSelectSql(table.rows.get(rowIndex), table, includeColumnName);
             builder.append(selectSql);
             builder.append("\n");
             if (rowIndex < table.rows.size() - 1) {
-                builder.append(" union all \n");
+                builder.append("union all\n");
             }
         }
 
@@ -256,44 +257,46 @@ public class SqlExecutor {
             }
         }
 
-        return renderSelectSql(rowValues, table) + " from (select 1) _sqldataprocessor_ where false";
+        return renderSelectSql(rowValues, table, true) + " from (select 1) _sqldataprocessor_ where false";
     }
 
-    static String renderSelectSql(int rowIndex, DataList table) {
-        return renderSelectSql(table.rows.get(rowIndex), table);
-    }
-
-    static String renderSelectSql(List<String> rowValues, DataList table) {
+    static String renderSelectSql(List<String> rowValues, DataList table, boolean includeColumnName) {
         List<String> selectColumns = new ArrayList<>();
         for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
             ColumnType type = table.columnTypes.get(columnIndex);
             String name = table.columns.get(columnIndex);
             String value = rowValues.get(columnIndex);
-            String selectColumnFormat = null;
+            String sqlValue = null;
             if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
-                selectColumnFormat = "%s as `%s`";
                 if (StringUtils.isBlank(value)) {
-                    value = null;
+                    sqlValue = "null";
+                } else {
+                    sqlValue = value;
                 }
             } else if (type == ColumnType.DATETIME) {
                 if (StringUtils.isBlank(value)) {
-                    value = null;
-                    selectColumnFormat = "cast(%s as datetime) as `%s`";
+                    sqlValue = "cast(null as datetime)";
                 } else {
-                    selectColumnFormat = "cast('%s' as datetime) as `%s`";
+                    sqlValue = "cast('" + value + "' as datetime)";
                 }
             } else {
                 if (value == null) {
-                    selectColumnFormat = "%s as `%s`";
+                    sqlValue = "null";
                 } else {
                     value = value.replace("\\", "\\\\");
                     value = value.replace("'", "''");
-                    selectColumnFormat = "'%s' as `%s`";
+                    sqlValue = "'" + value + "'";
                 }
             }
-            selectColumns.add(String.format(selectColumnFormat, value, name));
+
+            //  包含列名
+            if (includeColumnName) {
+                sqlValue += " as `" + name + "`";
+            }
+
+            selectColumns.add(sqlValue);
         }
-        return "select " + String.join(", ", selectColumns);
+        return "select " + String.join(",", selectColumns);
     }
 
     static String renderSelectSqlForH2(DataList table) {
@@ -334,11 +337,8 @@ public class SqlExecutor {
         List<String> values = new ArrayList<>();
         for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
             ColumnType type = table.columnTypes.get(columnIndex);
-            String name = table.columns.get(columnIndex);
             String value = rowValues.get(columnIndex);
-            String selectColumnFormat = null;
             if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
-                selectColumnFormat = "%s as `%s`";
                 if (StringUtils.isBlank(value)) {
                     values.add(null);
                 } else {
