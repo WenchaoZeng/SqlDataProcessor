@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import java.util.Set;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
+import com.zwc.sqldataprocessor.entity.UserException;
 import org.apache.commons.lang3.StringUtils;
 
 public class SqlExecutor {
@@ -69,7 +71,11 @@ public class SqlExecutor {
                 if (sqlStatementIndex > 0) {
                     msg = msg.substring(0, sqlStatementIndex);
                 }
-                throw new RuntimeException("SQL运行错误: " + msg);
+                throw new UserException(msg);
+            }
+
+            if (ex instanceof SQLSyntaxErrorException) {
+                throw new UserException(ex.getMessage());
             }
 
             throw new RuntimeException(ex);
@@ -141,9 +147,6 @@ public class SqlExecutor {
             // 读取数据集
             for (String tableName : tableNames) {
                 DataList table = tables.get(tableName);
-                if (table == null) {
-                    throw new RuntimeException("结果集$" + tableName + "不存在.");
-                }
 
                 String tableReplacement = "";
                 if (useTempTables) { // 构建临时表

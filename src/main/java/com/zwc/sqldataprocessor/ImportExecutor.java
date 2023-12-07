@@ -2,6 +2,7 @@ package com.zwc.sqldataprocessor;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
+import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.importer.CsvImporter;
 import com.zwc.sqldataprocessor.importer.Importer;
 import com.zwc.sqldataprocessor.importer.XlsImporter;
@@ -27,12 +29,14 @@ public class ImportExecutor {
         }
 
         if (importer == null) {
-            throw new RuntimeException("导入文件格式无法识别");
+            throw new UserException("导入文件格式无法识别");
         }
 
         byte[] fileContent = null;
         try {
             fileContent = Files.readAllBytes(Paths.get(filePath));
+        } catch (NoSuchFileException ex) {
+            throw new UserException("导入文件不存在");
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

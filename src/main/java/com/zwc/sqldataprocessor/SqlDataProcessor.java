@@ -2,9 +2,9 @@ package com.zwc.sqldataprocessor;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.Files;
 import java.util.function.Consumer;
 
+import com.zwc.sqldataprocessor.entity.UserException;
 import org.apache.commons.lang3.StringUtils;
 
 public class SqlDataProcessor {
@@ -22,6 +22,13 @@ public class SqlDataProcessor {
         try {
             run(args, logPrinter);
         } catch (Exception ex) {
+
+            // SQL语法错误不用打印调用栈
+            if (ex instanceof UserException) {
+                logPrinter.accept("错误: " + ex.getMessage());
+                return;
+            }
+
             // 输出异常明细
             StringWriter stringWriter = new StringWriter();
             PrintWriter printWriter = new PrintWriter(stringWriter);

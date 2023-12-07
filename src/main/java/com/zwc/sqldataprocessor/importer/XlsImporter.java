@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
+import com.zwc.sqldataprocessor.entity.UserException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
@@ -50,7 +51,7 @@ public class XlsImporter implements Importer {
         } else {
             sheet = book.getSheet(sheetName);
             if (sheet == null) {
-                throw new RuntimeException(String.format("Sheet %s 在excel文件里不存在.", sheetName));
+                throw new UserException("excel文件里不存在该sheet: " + sheetName);
             }
         }
 
