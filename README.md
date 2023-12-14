@@ -70,24 +70,29 @@ select 1 as a;
 
 ## `# import` 导入一个xls, xlsx或csv文件
 
-可以在文件名后面添加 ` as $xxx` 的方式来指定结果集的名称, 否则默认为$table.
-
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx
-# import /Users/xxx/Downloads/xxx.xlsx as $table2
 ```
 
 如果想指定导入具体的一个sheet, 可以这样:
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx[sheet名称1]
-# import /Users/xxx/Downloads/xxx.xlsx[sheet名称2] as $table2
 ```
 
 ## 使用 `# xxx` 来指定一个数据库连接名称和紧跟着一个或多个SQL语句, 以最后一个SQL语句执行结果作为本次的结果
 
+示例1
+
 ```sql
-# local_db
+# h2
+select * from test_table1 temp;
+```
+
+示例2: 多个sql一把执行
+
+```sql
+# local_mysql
 set @input = 'hello';
 update test_table set a = 2 where a = 1;
 select
@@ -102,32 +107,32 @@ limit 10
 ;
 ```
 
-## 使用 `as $xxx` 来指定结果集的名称, 若不指定, 则默认结果集名称为$table
+## 使用 `as $xxx` 来指定结果集的名称, 若没指定, 则使用默认名称$table
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx as $table1
 
-# local_db as $table2
+# local_mysql as $table2
 select
     temp.name
 from test_table temp;
 ```
 
-## 在SQL中可以使用 `$xxx` 的方式来引用之前的结果集
+## 在SQL中可以使用 `$xxx` 的方式来引用之前保存的结果集
 
 注意: 一定要在结果集后面加一个自己的自定义名称, 结果集是以一个子查询(或临时表)的方式运行的, sql标准要求子查询一定要指定一个别名.
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx
 
-# local_db as $table2
+# h2 as $table2
 select
     id
     text
 from test_table2
 ;
 
-# local_db
+# local_mysql
 select
     temp.name,
     temp2.text,
@@ -137,13 +142,13 @@ left join $table2 temp2 on temp2.id = temp.id2
 left join test_table3 temp3 on temp3.id = temp.id2
 ;
 
-# local_db
+# local_mysql
 select * from $table temp;
 ```
 
 ## 使用 `# export`  来导出上一个执行的结果集
 
-默认情况下, 最后一个执行的结果集会被自动导出和打开的. `export` 这个命令主要用途是用来在一个sql文件的运行阶段导出各个不同的结果集, 或者想自己执行结果文件的名称和路径.
+默认情况下, 最后一个执行的结果集会被自动导出和打开. `export` 这个命令主要用途是用来在一个sql文件的运行阶段导出各个不同的结果集, 或者想自己指定结果文件的名称, 路径或格式.
 
 ```sql
 -- 使用默认路径和文件名
@@ -156,9 +161,11 @@ select * from $table temp;
 # export /Users/wenchaozeng/Downloads/aa.csv
 ```
 
+如果指定了一个文件的后缀, 比如`.csv`或`.xlsx`, 则会自动切换到对应的文件格式做导出.
+
 ## 使用 `##` 或 `--` 或 `#` 来添加注释
 
-当使用 `#` 来注释时, 后面的文字不能是这个工具的关键词, 比如 `export`, `import`, `end`, 一个存在的数据库名, 等等.
+当使用 `#` 来注释时, 后面的文字不能是这个工具的关键词, 比如 `export`, `import`, `end`, 或者是一个存在的数据库名.
 
 ```sql
 
@@ -172,7 +179,7 @@ from test_table temp
 ;
 ```
 
-## 使用 `# end` 来提前结束文件, 后面的sql内容不会再处理.
+## 使用 `# end` 来提前结束文件的执行, 后面的sql内容不会再执行.
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx
@@ -191,16 +198,18 @@ from test_table2
 
 ## 空值null的导出显示控制
 
-默认情况下, 值为null会在导出时候显示成空字符串. 可以使用`# exportnulls`来指定在导出文件的时候, null被导出为`<null>`, 这样可以看出来具体哪个是null值, 与空字符串作区分. 可以使用`# -exportnulls`来恢复默认行为, 即null被导出为空白, 和空字符串显示一样.
+默认情况下, null值会在导出时候显示成空字符串. 可以使用`# exportnulls`来指定在导出文件的时候, null值被导出为`<null>`, 这样可以看出来具体哪个是null值, 与空字符串作区分. 可以使用`# -exportnulls`来恢复默认行为, 即null值被导出为空白, 和空字符串显示一样.
 
-## 导出xlsx格式
+## xlsx格式和csv格式的切换
 
-使用`# exportxlsx`设置xlsx导出格式, 使用`# -exportxlsx`关闭xlsx导出格式. 默认: 关闭xlsx导出格式, 即导出格式为csv.
+使用`# exportxlsx`设置xlsx导出格式, 使用`# -exportxlsx`关闭xlsx导出格式(即导出格式为csv). 默认: 导出格式为csv.
+
+如果在`# export`命令里指定了一个文件后缀, 比如`.csv`或`.xlsx`, 则会自动切换到对应的导出格式.
 
 ## 临时表模式
 
-默认情况下, 如果一个sql里引用了结果集, 结果集会以子查询的方式嵌入到sql中. 如果结果集数据量很大, 会导致子查询的sql很大, 从而导致超出java里String的最大容量, 或者超出mysql库的最大sql长度.
+默认情况下, 如果一个sql里引用了结果集, 结果集会以子查询的方式嵌入到sql中. 如果结果集数据量很大, 会导致子查询的sql很大, 从而导致超出java里String的最大容量, 或者超出mysql数据库可接收的最大sql长度.
 
-使用临时表模式, 可以预先把结果集的数据导入到临时表中, 然后sql中直接从临时表查询结果集, 这样sql就比较短. 
+使用临时表模式, 则会预先把结果集的数据分批导入到临时表中, 然后sql会直接从临时表查询结果集, 这样sql就比较短. 
 
 使用`# temptables`打开临时表模式, 使用`# -temptables`关闭临时表模式. 默认: 关闭临时表模式.
