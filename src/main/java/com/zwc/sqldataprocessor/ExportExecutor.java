@@ -7,20 +7,32 @@ import com.zwc.sqldataprocessor.exporter.Exporter;
 import com.zwc.sqldataprocessor.exporter.XlsxExporter;
 
 public class ExportExecutor {
+    static XlsxExporter xlsxExporter = new XlsxExporter();
+    static CsvExporter csvExporter = new CsvExporter();
+
     public static String export(String resultName, DataList table, ExportStatement statement) {
+
+        // 自动根据文件名称推断导出格式
+        String path = statement.filePath;
+        if (path != null && path.toLowerCase().endsWith(xlsxExporter.getExtension())) {
+            statement.exportXlsx = true;
+        } else if (path != null && path.toLowerCase().endsWith(csvExporter.getExtension())) {
+            statement.exportXlsx = false;
+        }
 
         // 执行导出
         Exporter exporter = statement.exportXlsx ? new XlsxExporter() : new CsvExporter();
         byte[] bytes = exporter.export(table, statement.exportNulls);
 
         // 写入导出文件
-        String path = statement.filePath;
         if (path == null) { // 默认文件名为数据集的名称
             path = String.format("./%s.%s", resultName, exporter.getExtension());
             path = FileHelper.writeOutputFile(path, bytes);
             return path;
         } else if (!path.contains("/") && !path.contains("\\")) { // 指定一个文件名称
-            path = String.format("./%s.%s", path, exporter.getExtension());
+            if (!path.endsWith(exporter.getExtension())) { // 尝试自动添加文件后缀
+                path = String.format("./%s.%s", path, exporter.getExtension());
+            }
             path = FileHelper.writeOutputFile(path, bytes);
             return path;
         }
