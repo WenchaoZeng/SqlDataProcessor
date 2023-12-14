@@ -11,20 +11,21 @@ import java.util.regex.Pattern;
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.UserException;
+import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.importer.CsvImporter;
 import com.zwc.sqldataprocessor.importer.Importer;
 import com.zwc.sqldataprocessor.importer.XlsImporter;
 import org.apache.commons.lang3.StringUtils;
 
 public class ImportExecutor {
-    public static DataList doImport(String filePath, String sheetName) {
-
+    public static DataList doImport(ImportStatement statement) {
         Importer importer = null;
-        if (filePath.endsWith(".csv") || filePath.endsWith(".CSV")) {
+        String filePath = statement.filePath.toLowerCase();
+        if (filePath.endsWith(".csv")) {
             importer = new CsvImporter();
-        } else if (filePath.endsWith(".xls") || filePath.endsWith(".XLS")) {
+        } else if (filePath.endsWith(".xls")) {
             importer = new XlsImporter(false);
-        } else if (filePath.endsWith(".xlsx") || filePath.endsWith(".XLSX")) {
+        } else if (filePath.endsWith(".xlsx")) {
             importer = new XlsImporter(true);
         }
 
@@ -34,13 +35,13 @@ public class ImportExecutor {
 
         byte[] fileContent = null;
         try {
-            fileContent = Files.readAllBytes(Paths.get(filePath));
+            fileContent = Files.readAllBytes(Paths.get(statement.filePath));
         } catch (NoSuchFileException ex) {
             throw new UserException("导入文件不存在");
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        DataList table = importer.doImport(fileContent, sheetName);
+        DataList table = importer.doImport(fileContent, statement.sheetName);
 
         removeEmptyColumn(table);
         calculateColumnType(table);

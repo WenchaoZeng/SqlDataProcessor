@@ -5,16 +5,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
-import com.zwc.sqldataprocessor.entity.Sql;
-import com.zwc.sqldataprocessor.entity.Sql.SqlType;
+import com.zwc.sqldataprocessor.entity.sql.EndStatement;
+import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
+import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
+import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
+import com.zwc.sqldataprocessor.entity.sql.Statement;
 
 public class SqlLoader {
-    public static List<Sql> loadSql(String filePath) {
+    static boolean exportNulls;
+    static boolean exportXlsx;
+    static boolean tempTables;
+
+    public static List<Statement> loadSql(String filePath) {
+        exportNulls = false;
+        exportXlsx = false;
+        tempTables = false;
         String fileContent = FileHelper.readFile(filePath);
-        List<Sql> sqlList = new ArrayList<>();
-        boolean exportNulls = false;
-        boolean exportXlsx = false;
-        boolean useTempTables = false;
+        List<Statement> statements = new ArrayList<>();
+
         for (String line : fileContent.split("\n")) {
 
             if (line.startsWith("# ")) {
@@ -22,10 +30,12 @@ public class SqlLoader {
                 String lowerLine = line.toLowerCase();
 
                 if (lowerLine.equals("# end")) {
-                    Sql endSql = new Sql();
-                    endSql.type = SqlType.END;
-                    sqlList.add(endSql);
-                    continue;
+
+                    // 确保最后有一个导出语句
+                    tryAddExportToEnd(statements);
+
+                    statements.add(new EndStatement());
+                    return statements;
                 }
 
                 if (lowerLine.equals("# exportnulls")) {
@@ -49,39 +59,37 @@ public class SqlLoader {
                 }
 
                 if (lowerLine.equals("# temptables")) {
-                    useTempTables = true;
+                    tempTables = true;
                     continue;
                 }
 
                 if (lowerLine.equals("# -temptables")) {
-                    useTempTables = false;
+                    tempTables = false;
                     continue;
                 }
 
                 // 导入
                 if (line.startsWith("# import ")) {
-                    Sql importSql = new Sql();
-                    importSql.type = SqlType.IMPORT;
-                    importSql.fileName = line.replace("# import ", "");
-                    importSql.fileName = removeResultNameClause(importSql.fileName);
-                    importSql.sheetName = getSheetName(importSql.fileName);
-                    importSql.fileName = removeSheetName(importSql.fileName);
-                    importSql.resultName = getResultName(line);
-                    sqlList.add(importSql);
+                    ImportStatement statement = new ImportStatement();
+                    statement.filePath = line.replace("# import ", "");
+                    statement.filePath = removeResultNameClause(statement.filePath);
+                    statement.sheetName = getSheetName(statement.filePath);
+                    statement.filePath = removeSheetName(statement.filePath);
+                    statement.resultName = getResultName(line);
+                    statements.add(statement);
                     continue;
                 }
 
                 // 导出
                 if (line.startsWith("# export")) {
-                    Sql exportSql = new Sql();
-                    exportSql.type = SqlType.EXPORT;
-                    exportSql.exportNulls = exportNulls;
-                    exportSql.exportXlsx = exportXlsx;
+                    ExportStatement statement = new ExportStatement();
+                    statement.exportNulls = exportNulls;
+                    statement.exportXlsx = exportXlsx;
                     String exportFilePath = line.replace("# export", "").trim();
                     if (!exportFilePath.equals("")) {
-                        exportSql.fileName = exportFilePath;
+                        statement.filePath = exportFilePath;
                     }
-                    sqlList.add(exportSql);
+                    statements.add(statement);
                     continue;
                 }
 
@@ -90,43 +98,57 @@ public class SqlLoader {
                 databaseName = removeResultNameClause(databaseName);
                 DatabaseConfig dbConfig = DatabaseConfigLoader.getDbConfig(databaseName);
                 if (dbConfig != null) {
-                    Sql sql = new Sql();
-                    sql.type = SqlType.SQL;
-                    sql.databaseName = databaseName;
-                    sql.sql = "";
-                    sql.resultName = getResultName(line);
-                    sql.useTempTables = useTempTables;
-                    sqlList.add(sql);
+                    SqlStatement statement = new SqlStatement();
+                    statement.databaseName = databaseName;
+                    statement.sql = "";
+                    statement.resultName = getResultName(line);
+                    statement.tempTables = tempTables;
+                    statements.add(statement);
                     continue;
                 }
             }
 
             // 读取sql语句
-            if (sqlList.size() <= 0) {
+            if (statements.size() <= 0) {
                 continue;
             }
-            Sql sql = sqlList.get(sqlList.size() - 1);
-            if (sql.type != SqlType.SQL) {
+            Statement lastStatement = statements.get(statements.size() - 1);
+            if (!(lastStatement instanceof SqlStatement)) {
                 continue;
             }
-            sql.sql += line + "\n";
+            SqlStatement sqlStatement = ((SqlStatement)lastStatement);
+            if (sqlStatement.sql == "") {
+                sqlStatement.sql = line;
+                continue;
+            }
+            sqlStatement.sql += "\n" + line;
         }
 
         // 确保最后有一个导出语句
-        if (sqlList.size() > 0 && sqlList.get(sqlList.size() - 1).type != SqlType.EXPORT) {
-            Sql exportSql = new Sql();
-            exportSql.type = SqlType.EXPORT;
-            exportSql.exportNulls = exportNulls;
-            exportSql.exportXlsx = exportXlsx;
-            sqlList.add(exportSql);
+        tryAddExportToEnd(statements);
+
+        return statements;
+    }
+
+    /**
+     * 在语句后面自动加上一个导出语句
+     */
+    static void tryAddExportToEnd(List<Statement> statements) {
+        if (statements.size() <= 0) {
+            return;
         }
 
-        return sqlList;
+        if (!(statements.get(statements.size() - 1) instanceof ExportStatement)) {
+            ExportStatement statement = new ExportStatement();
+            statement.exportNulls = exportNulls;
+            statement.exportXlsx = exportXlsx;
+            statements.add(statement);
+        }
     }
 
     static String getResultName(String line) {
         int index = line.lastIndexOf(" as $");
-        return index > 0 ? line.substring(index + 5) : null;
+        return index > 0 ? line.substring(index + 5) : "table";
     }
 
     static String removeResultNameClause(String line) {

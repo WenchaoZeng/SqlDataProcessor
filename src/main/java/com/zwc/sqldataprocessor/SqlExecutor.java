@@ -15,19 +15,20 @@ import java.util.Set;
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.UserException;
+import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import org.apache.commons.lang3.StringUtils;
 
 public class SqlExecutor {
 
-    public static DataList exec(String sql, String databaseName, Map<String, DataList> tables, boolean useTempTables) {
-        String rawSql = renderSql(sql, tables, databaseName, useTempTables);
+    public static DataList exec(SqlStatement statement, Map<String, DataList> tables) {
+        String rawSql = renderSql(statement, tables);
 
         // 解除group_concat的长度限制
-        if (DatabaseConfigLoader.isMySql(databaseName)) {
-            execRawSql("SET SESSION group_concat_max_len = 1000000;", databaseName);
+        if (DatabaseConfigLoader.isMySql(statement.databaseName)) {
+            execRawSql("SET SESSION group_concat_max_len = 1000000;", statement.databaseName);
         }
 
-        return execRawSql(rawSql, databaseName);
+        return execRawSql(rawSql, statement.databaseName);
     }
 
     public static DataList execRawSql(String sql, String databaseName) {
@@ -123,10 +124,10 @@ public class SqlExecutor {
         return table;
     }
 
-    static String renderSql(String sql, Map<String, DataList> tables, String databaseName, boolean useTempTables) {
+    static String renderSql(SqlStatement statement, Map<String, DataList> tables) {
         Set<String> createdTempTables = new HashSet<>();
         StringBuilder sqlBuilder = new StringBuilder();
-        for (String sqlLine : sql.split("\n")) {
+        for (String sqlLine : statement.sql.split("\n")) {
 
             // 对于注释行不需要解析数据集
             String sqlLineTrim = sqlLine.trim();
@@ -149,24 +150,24 @@ public class SqlExecutor {
                 DataList table = tables.get(tableName);
 
                 String tableReplacement = "";
-                if (useTempTables) { // 构建临时表
+                if (statement.tempTables) { // 构建临时表
                     String tempTableName = "_temp_" + tableName.replace("$", "");
 
                     if (!createdTempTables.contains(tempTableName)) {
                         String sqlFormat = "drop temporary table if exists %s;";
-                        if (DatabaseConfigLoader.isH2(databaseName)) {
+                        if (DatabaseConfigLoader.isH2(statement.databaseName)) {
                             sqlFormat = "drop table if exists %s;";
                         }
-                        execRawSql(String.format(sqlFormat, tempTableName), databaseName);
-                        String createTempTableSql = renderCreateTempTableSql(table, tempTableName, databaseName);
-                        execRawSql(createTempTableSql, databaseName);
+                        execRawSql(String.format(sqlFormat, tempTableName), statement.databaseName);
+                        String createTempTableSql = renderCreateTempTableSql(table, tempTableName, statement.databaseName);
+                        execRawSql(createTempTableSql, statement.databaseName);
 
                         // 分批导入数据
                         List<DataList> dataLists = table.split(1000);
                         for (DataList dataList : dataLists) {
                             String dataInsertSql = "insert into " + tempTableName + " ";
-                            dataInsertSql += renderSelectSql(dataList, databaseName);
-                            execRawSql(dataInsertSql, databaseName);
+                            dataInsertSql += renderSelectSql(dataList, statement.databaseName);
+                            execRawSql(dataInsertSql, statement.databaseName);
                         }
 
                         createdTempTables.add(tempTableName);
@@ -176,7 +177,7 @@ public class SqlExecutor {
                 } else { // 构建数据集sql语句
                     StringBuilder builder = new StringBuilder();
                     builder.append("(\n");
-                    String tableSelectSql = renderSelectSql(table, databaseName);
+                    String tableSelectSql = renderSelectSql(table, statement.databaseName);
                     builder.append(tableSelectSql);
                     builder.append(") ");
                     tableReplacement = builder.toString();
