@@ -29,11 +29,14 @@ public class JsonImporter implements Importer {
         Object jsonObject = JSON.parse(contentStr);
 
         // 指定一个字段路径
-        if (jsonObject instanceof JSONObject && StringUtils.isNotBlank(sheetName)) {
+        if (StringUtils.isNotBlank(sheetName)) {
             String[] fields = sheetName.split("[.]");
             for (String field : fields) {
+                if (!(jsonObject instanceof JSONObject)) {
+                    throw new UserException("不支持在json数组里指定字段: " + field);
+                }
                 if (!((JSONObject) jsonObject).containsKey(field)) {
-                    throw new UserException("json中不存在字段: " + field);
+                    throw new UserException("不存在json字段: " + field);
                 }
                 jsonObject = ((JSONObject) jsonObject).get(field);
             }
