@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
+import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.EndStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
@@ -157,7 +158,7 @@ public class SqlLoader {
     }
 
     static String getSheetName(String filePath) {
-        int extIndex = filePath.lastIndexOf(".");
+        int extIndex = getExtIndex(filePath);
         int leftBracketIndex = filePath.indexOf("[", extIndex);
         if (leftBracketIndex < 0) {
             return null;
@@ -169,12 +170,26 @@ public class SqlLoader {
     }
 
     static String removeSheetName(String filePath) {
-        int extIndex = filePath.lastIndexOf(".");
+        int extIndex = getExtIndex(filePath);
         int leftBracketIndex = filePath.indexOf("[", extIndex);
         if (leftBracketIndex < 0) {
             return filePath.trim();
         }
 
         return filePath.substring(0, leftBracketIndex).trim();
+    }
+
+    /**
+     * 获取文件后缀的下标
+     */
+    static int getExtIndex(String filePath) {
+        for (String ext : ImportExecutor.importers.keySet()) {
+            int index = filePath.lastIndexOf(ext);
+            if (index > 0) {
+                return index;
+            }
+        }
+
+        throw new UserException("不支持导入格式, 请检查文件名后缀是否正确: " + filePath);
     }
 }

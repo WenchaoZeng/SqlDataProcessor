@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,21 +18,31 @@ import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.importer.CsvImporter;
 import com.zwc.sqldataprocessor.importer.Importer;
+import com.zwc.sqldataprocessor.importer.JsonImporter;
 import com.zwc.sqldataprocessor.importer.XlsImporter;
+import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.StringUtils;
 
 public class ImportExecutor {
-    public static DataList doImport(ImportStatement statement) {
-        Importer importer = null;
-        String filePath = statement.filePath.toLowerCase();
-        if (filePath.endsWith(".csv")) {
-            importer = new CsvImporter();
-        } else if (filePath.endsWith(".xls")) {
-            importer = new XlsImporter(false);
-        } else if (filePath.endsWith(".xlsx")) {
-            importer = new XlsImporter(true);
-        }
 
+    public static Map<String, Importer> importers = new LinkedHashMap<>();
+    static {
+        importers.put(".xlsx", new XlsImporter(true));
+        importers.put(".xls", new XlsImporter(false));
+        importers.put(".csv", new CsvImporter());
+        importers.put(".json", new JsonImporter());
+    }
+
+    public static DataList doImport(ImportStatement statement) {
+
+        // 识别文件类型
+        String filePath = statement.filePath.toLowerCase();
+        Importer importer = null;
+        for (Entry<String, Importer> item : importers.entrySet()) {
+            if (filePath.endsWith(item.getKey())) {
+                importer = item.getValue();
+            }
+        }
         if (importer == null) {
             throw new UserException("导入文件格式无法识别");
         }

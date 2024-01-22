@@ -68,16 +68,22 @@ select 1 as a;
 
 文件后缀建议为sql, 以让你的文本编辑器支持sql语法的高亮显示.
 
-## `# import` 导入一个xls, xlsx或csv文件
+## `# import` 导入一个xls, xlsx, csv或json文件
 
 ```sql
-# import /Users/xxx/Downloads/xxx.xlsx
+# import /Users/xxx/Downloads/xxx.csv
 ```
 
-如果想指定导入具体的一个sheet, 可以这样:
+针对xls和xlsx文件, 如果想指定导入具体的一个sheet(如果不指定, 默认是导入第一个sheet), 可以这样:
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx[sheet名称1]
+```
+
+json的根节点可以是数组或对象. 如果json的根节点是一个对象, 可以指定导入具体的内嵌字段, 多层级用`.`分隔, 比如:
+
+```sql
+# import /Users/xxx/Downloads/xxx.json[字段1.字段2]
 ```
 
 ## 使用 `# xxx` 来指定一个数据库连接名称和紧跟着一个或多个SQL语句, 以最后一个SQL语句执行结果作为本次的结果
