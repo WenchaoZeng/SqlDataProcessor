@@ -7,7 +7,7 @@
 欢迎反馈问题, 提出建议, 甚至是直接贡献代码. :D
 
 扫码拉你进技术支持群 (加好友时, 请备注SqlDataProcessor)
-![wechat qr code](./wechat.png)
+![wechat qr code](./wechat.jpg)
 
 # 下载和运行
 
