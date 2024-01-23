@@ -4,7 +4,10 @@
 
 [演示视频](https://www.bilibili.com/video/BV1ou4y1R7tj/)
 
-欢迎反馈问题, 提出建议, 甚至是直接贡献代码 (参与进来, 这是最好的方式. :D).
+欢迎反馈问题, 提出建议, 甚至是直接贡献代码. :D
+
+扫码拉你进技术支持群 (加好友时, 请备注SqlDataProcessor)
+![wechat qr code](./wechat.png)
 
 # 下载和运行
 
