@@ -7,7 +7,7 @@
 欢迎反馈问题, 提出建议, 甚至是直接贡献代码. :D
 
 扫码进技术支持群 (加好友时, 请备注SqlDataProcessor)
-<br/><img src="./wechat.jpg" width="30%" height="auto">
+<br/><img src="./wechat.jpg" width="20%" height="auto">
 
 # 下载和运行
 
