@@ -2,3 +2,4 @@
     导入: 指定列头的行号
     自动连接db, 自动识别是否支持tempTable
     制作一个idea/datagrip插件
+    支持postgres, 支持SQLite
