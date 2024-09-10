@@ -5,20 +5,23 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
+import com.zwc.sqldataprocessor.dbexecutor.DbExecutor;
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
+import org.apache.commons.lang3.StringUtils;
 
 public class DatabaseConfigLoader {
 
     public static String path = "./databases.json";
-    static List<DatabaseConfig> databaseConfigs = null;
+    static Map<String, DatabaseConfig> databaseConfigs = null;
     static Map<String, Connection> conns = null;
 
     public static Connection getConn(String databaseName) {
@@ -57,8 +60,7 @@ public class DatabaseConfigLoader {
 
     static DatabaseConfig getDbConfig(String databaseName) {
         loadDatabaseConfigs();
-        DatabaseConfig dbConfig = databaseConfigs.stream().filter(x -> x.name.equals(databaseName)).findAny().orElse(null);
-        return dbConfig;
+        return databaseConfigs.get(databaseName);
     }
 
     static void loadDatabaseConfigs() {
@@ -69,12 +71,14 @@ public class DatabaseConfigLoader {
         initializeDefaultConfig();
 
         String fileContent = FileHelper.readFile(path);
-        databaseConfigs = JSON.parseArray(fileContent, DatabaseConfig.class);
-        for (DatabaseConfig dbConfig : databaseConfigs) {
-            if (isMySql(dbConfig.name)) {
-                dbConfig.url += "&allowMultiQueries=true";
-            }
+        List<DatabaseConfig> databaseConfigList = JSON.parseArray(fileContent, DatabaseConfig.class);
+        for (DatabaseConfig dbConfig : databaseConfigList) {
+            dbConfig.name = StringUtils.trimToEmpty(dbConfig.name);
+            dbConfig.url = StringUtils.trimToEmpty(dbConfig.url);
+            dbConfig.url = DbExecutor.appendUrlSuffix(dbConfig.url);
         }
+
+        databaseConfigs = databaseConfigList.stream().collect(Collectors.toMap(x -> x.name, x -> x, (a, b) -> a));
     }
 
     static void initializeDefaultConfig() {
@@ -82,20 +86,10 @@ public class DatabaseConfigLoader {
             return;
         }
 
-        List<DatabaseConfig> list = new ArrayList<>();
-        DatabaseConfig config = null;
-
-        config = new DatabaseConfig();
-        config.name = "h2";
-        config.url = "jdbc:h2:mem:;DATABASE_TO_UPPER=FALSE";
-        list.add(config);
-
-        config = new DatabaseConfig();
-        config.name = "mysql";
-        config.url = "jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterset=utf-8";
-        config.userName = "root";
-        config.password = "123456";
-        list.add(config);
+        List<DatabaseConfig> list = DbExecutor.dbExecutors.stream()
+            .map(x -> x.getDefaultConfig())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
         String fileContent = JSON.toJSONString(list, SerializerFeature.PrettyFormat);
         FileHelper.writeFile(path, fileContent);

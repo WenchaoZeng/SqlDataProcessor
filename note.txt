@@ -3,4 +3,5 @@
     自动连接db, 自动识别是否支持tempTable
     制作一个idea/datagrip插件
     支持postgres, 支持SQLite
+
     使用多态的方式实现不同的数据库的支持
