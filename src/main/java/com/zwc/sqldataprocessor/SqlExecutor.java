@@ -188,6 +188,7 @@ public class SqlExecutor {
     static void renderSelectSql(StringBuilder builder, DataList table, DbExecutor dbExecutor) {
         if (table.rows.isEmpty()) {
             renderEmptySelectSql(builder, table, dbExecutor);
+            return;
         }
 
         dbExecutor.renderSelectSql(builder, table);
