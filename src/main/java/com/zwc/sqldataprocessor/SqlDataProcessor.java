@@ -42,7 +42,7 @@ public class SqlDataProcessor {
         DatabaseConfigLoader.initializeDefaultConfig();
 
         // 命令行模式
-        if (args.length <= 0 || StringUtils.isBlank(args[0])) {
+        if (args.length == 0 || StringUtils.isBlank(args[0])) {
             logPrinter.accept("缺少sql文件路径");
             return;
         }
