@@ -11,7 +11,7 @@ public class DataList {
 
     public List<String> columns;
     public List<ColumnType> columnTypes;
-    public static enum ColumnType {
+    public enum ColumnType {
         INT,
         DECIMAL,
         DATETIME,

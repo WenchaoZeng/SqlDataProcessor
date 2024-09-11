@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.zwc.sqldataprocessor.dbexecutor.DbExecutor;
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
+import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import org.apache.commons.lang3.StringUtils;
@@ -22,19 +24,13 @@ public class SqlExecutor {
 
     public static DataList exec(SqlStatement statement, Map<String, DataList> tables) {
         String rawSql = renderSql(statement, tables);
-
-        // 解除group_concat的长度限制
-        if (DatabaseConfigLoader.isMySql(statement.databaseName)) {
-            execRawSql("SET SESSION group_concat_max_len = 1000000;", statement.databaseName);
-        }
-
         return execRawSql(rawSql, statement.databaseName);
     }
 
     public static DataList execRawSql(String sql, String databaseName) {
 
         FileHelper.writeOutputFile("./current.sql", sql);
-
+        DatabaseConfig dbConfig = DatabaseConfigLoader.getDbConfig(databaseName);
         try {
 
             Connection conn = DatabaseConfigLoader.getConn(databaseName);
@@ -65,16 +61,9 @@ public class SqlExecutor {
                 return table;
             }
         } catch (Exception ex) {
-            // h2数据库会把完整的sql打印出来, 会导致错误里输出的内容太多了, 所以只需要保留错误的描述就行.
-            if (ex instanceof org.h2.jdbc.JdbcSQLSyntaxErrorException) {
-                String msg = ex.getMessage();
-                int sqlStatementIndex = msg.indexOf("SQL statement:");
-                if (sqlStatementIndex > 0) {
-                    msg = msg.substring(0, sqlStatementIndex);
-                }
-                throw new UserException(msg);
-            }
+            dbConfig.dbExecutor.translateSqlException(ex);
 
+            // SQL语法错误
             if (ex instanceof SQLSyntaxErrorException) {
                 throw new UserException(ex.getMessage());
             }
@@ -125,6 +114,7 @@ public class SqlExecutor {
     }
 
     static String renderSql(SqlStatement statement, Map<String, DataList> tables) {
+        DatabaseConfig dbConfig = DatabaseConfigLoader.getDbConfig(statement.databaseName);
         Set<String> createdTempTables = new HashSet<>();
         StringBuilder sqlBuilder = new StringBuilder();
         for (String sqlLine : statement.sql.split("\n")) {
@@ -154,20 +144,22 @@ public class SqlExecutor {
                     String tempTableName = "_temp_" + tableName.replace("$", "");
 
                     if (!createdTempTables.contains(tempTableName)) {
-                        String sqlFormat = "drop temporary table if exists %s;";
-                        if (DatabaseConfigLoader.isH2(statement.databaseName)) {
-                            sqlFormat = "drop table if exists %s;";
-                        }
-                        execRawSql(String.format(sqlFormat, tempTableName), statement.databaseName);
-                        String createTempTableSql = renderCreateTempTableSql(table, tempTableName, statement.databaseName);
+
+                        // 删除已存在的临时表
+                        String dropTempTableSql = dbConfig.dbExecutor.renderDropTempTableSql(tempTableName);
+                        execRawSql(dropTempTableSql, statement.databaseName);
+
+                        // 创建临时表
+                        String createTempTableSql = dbConfig.dbExecutor.renderCreateTempTableSql(table, tempTableName);
                         execRawSql(createTempTableSql, statement.databaseName);
 
                         // 分批导入数据
-                        List<DataList> dataLists = table.split(1000);
+                        List<DataList> dataLists = table.split(100);
                         for (DataList dataList : dataLists) {
-                            String dataInsertSql = "insert into " + tempTableName + " ";
-                            dataInsertSql += renderSelectSql(dataList, statement.databaseName);
-                            execRawSql(dataInsertSql, statement.databaseName);
+                            StringBuilder builder = new StringBuilder();
+                            builder.append("insert into " + tempTableName + " ");
+                            renderSelectSql(builder, dataList, dbConfig.dbExecutor);
+                            execRawSql(builder.toString(), statement.databaseName);
                         }
 
                         createdTempTables.add(tempTableName);
@@ -177,8 +169,7 @@ public class SqlExecutor {
                 } else { // 构建数据集sql语句
                     StringBuilder builder = new StringBuilder();
                     builder.append("(\n");
-                    String tableSelectSql = renderSelectSql(table, statement.databaseName);
-                    builder.append(tableSelectSql);
+                    renderSelectSql(builder, table, dbConfig.dbExecutor);
                     builder.append(") ");
                     tableReplacement = builder.toString();
                 }
@@ -194,62 +185,15 @@ public class SqlExecutor {
         return sqlBuilder.toString();
     }
 
-    static String renderCreateTempTableSql(DataList table, String tableName, String databaseName) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("create temporary table " + tableName + "(");
-        for (int index = 0; index < table.columns.size(); ++index) {
-            builder.append("`" + table.columns.get(index) + "` ");
-
-            ColumnType columnType = table.columnTypes.get(index);
-            if (columnType == ColumnType.INT) {
-                    builder.append("bigint");
-            } else if (columnType == ColumnType.DECIMAL) {
-                builder.append("decimal");
-            } else if (columnType == ColumnType.DATETIME) {
-                builder.append("datetime");
-            } else {
-                builder.append("LONGTEXT");
-            }
-
-            if (index != table.columns.size() - 1) {
-                builder.append(",");
-            }
+    static void renderSelectSql(StringBuilder builder, DataList table, DbExecutor dbExecutor) {
+        if (table.rows.isEmpty()) {
+            renderEmptySelectSql(builder, table, dbExecutor);
         }
-        builder.append(") ");
-        if (DatabaseConfigLoader.isMySql(databaseName)) {
-            builder.append("collate utf8mb4_general_ci CHARACTER SET utf8mb4");
-        }
-        return builder.toString();
+
+        dbExecutor.renderSelectSql(builder, table);
     }
 
-    static String renderSelectSql(DataList table, String databaseName) {
-        if (DatabaseConfigLoader.isH2(databaseName)) {
-            return renderSelectSqlForH2(table);
-        } else {
-            return renderSelectSql(table);
-        }
-    }
-
-    static String renderSelectSql(DataList table) {
-        if (table.rows.size() <= 0) {
-            return renderEmptySelectSql(table);
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (int rowIndex = 0; rowIndex < table.rows.size(); ++rowIndex) {
-            boolean includeColumnName = rowIndex == 0;
-            String selectSql = renderSelectSql(table.rows.get(rowIndex), table, includeColumnName);
-            builder.append(selectSql);
-            builder.append("\n");
-            if (rowIndex < table.rows.size() - 1) {
-                builder.append("union all\n");
-            }
-        }
-
-        return builder.toString();
-    }
-
-    static String renderEmptySelectSql(DataList table) {
+    static void renderEmptySelectSql(StringBuilder builder, DataList table, DbExecutor dbExecutor) {
         List<String> rowValues = new ArrayList<>();
         for (ColumnType type : table.columnTypes) {
             if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
@@ -261,108 +205,12 @@ public class SqlExecutor {
             }
         }
 
-        return renderSelectSql(rowValues, table, true) + " from (select 1) _sqldataprocessor_ where false";
-    }
+        builder.append("select * from ( ");
 
-    static String renderSelectSql(List<String> rowValues, DataList table, boolean includeColumnName) {
-        List<String> selectColumns = new ArrayList<>();
-        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
-            ColumnType type = table.columnTypes.get(columnIndex);
-            String name = table.columns.get(columnIndex);
-            String value = rowValues.get(columnIndex);
-            String sqlValue = null;
-            if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
-                if (StringUtils.isBlank(value)) {
-                    sqlValue = "null";
-                } else {
-                    sqlValue = value;
-                }
-            } else if (type == ColumnType.DATETIME) {
-                if (StringUtils.isBlank(value)) {
-                    sqlValue = "cast(null as datetime)";
-                } else {
-                    sqlValue = "cast('" + value + "' as datetime)";
-                }
-            } else {
-                if (value == null) {
-                    sqlValue = "null";
-                } else {
-                    value = value.replace("\\", "\\\\");
-                    value = value.replace("'", "''");
-                    sqlValue = "'" + value + "'";
-                }
-            }
+        table.rows.add(rowValues);
+        dbExecutor.renderSelectSql(builder, table);
+        table.rows.clear();
 
-            //  包含列名
-            if (includeColumnName) {
-                sqlValue += " as `" + name + "`";
-            }
-
-            selectColumns.add(sqlValue);
-        }
-        return "select " + String.join(",", selectColumns);
-    }
-
-    static String renderSelectSqlForH2(DataList table) {
-        if (table.rows.size() <= 0) {
-            return renderEmptySelectSql(table);
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("select\n");
-        List<String> selectColumns = new ArrayList<>();
-        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
-            String name = table.columns.get(columnIndex);
-            ColumnType type = table.columnTypes.get(columnIndex);
-            String selectColumnFormat = null;
-            if (type == ColumnType.DATETIME) {
-                selectColumnFormat = "cast(C" + (columnIndex +1) + " as datetime) as `%s`";
-            } else {
-                selectColumnFormat = "C" + (columnIndex +1) + " as `%s`";
-            }
-            selectColumns.add(String.format(selectColumnFormat, name));
-        }
-        builder.append(String.join(", ", selectColumns));
-        builder.append("\n");
-        builder.append("from VALUES\n");
-
-        for (int rowIndex = 0; rowIndex < table.rows.size(); ++rowIndex) {
-            String valueClause = renderValueClause(table.rows.get(rowIndex), table);
-            builder.append(valueClause);
-            if (rowIndex < table.rows.size() - 1) {
-                builder.append(", \n");
-            }
-        }
-
-        return builder.toString();
-    }
-
-    static String renderValueClause(List<String> rowValues, DataList table) {
-        List<String> values = new ArrayList<>();
-        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
-            ColumnType type = table.columnTypes.get(columnIndex);
-            String value = rowValues.get(columnIndex);
-            if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
-                if (StringUtils.isBlank(value)) {
-                    values.add(null);
-                } else {
-                    values.add(value);
-                }
-            } else if (type == ColumnType.DATETIME) {
-                if (StringUtils.isBlank(value)) {
-                    values.add(null);
-                } else {
-                    values.add("'" + value + "'");
-                }
-            } else {
-                if (value == null) {
-                    values.add(null);
-                } else {
-                    value = value.replace("'", "''");
-                    values.add("'" + value + "'");
-                }
-            }
-        }
-        return "(" + String.join(", ", values) + ")";
+        builder.append(" ) _sqldataprocessor_empty_ where 1 = 0");
     }
 }

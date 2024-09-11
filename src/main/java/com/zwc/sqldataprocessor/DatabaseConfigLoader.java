@@ -42,20 +42,17 @@ public class DatabaseConfigLoader {
         try {
             conn = DriverManager.getConnection(dbConfig.url, dbConfig.userName, dbConfig.password);
             conns.put(databaseName, conn);
+
+            // 执行初始化的sql
+            String sql = dbConfig.dbExecutor.getSqlAfterConnect();
+            if (StringUtils.isNotBlank(sql)) {
+                SqlExecutor.execRawSql(sql, databaseName);
+            }
+
             return conn;
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    public static boolean isMySql(String databaseName) {
-        DatabaseConfig dbConfig = getDbConfig(databaseName);
-        return dbConfig != null && dbConfig.url.contains("jdbc:mysql");
-    }
-
-    public static boolean isH2(String databaseName) {
-        DatabaseConfig dbConfig = getDbConfig(databaseName);
-        return dbConfig != null && dbConfig.url.contains("jdbc:h2");
     }
 
     static DatabaseConfig getDbConfig(String databaseName) {
@@ -75,10 +72,26 @@ public class DatabaseConfigLoader {
         for (DatabaseConfig dbConfig : databaseConfigList) {
             dbConfig.name = StringUtils.trimToEmpty(dbConfig.name);
             dbConfig.url = StringUtils.trimToEmpty(dbConfig.url);
-            dbConfig.url = DbExecutor.appendUrlSuffix(dbConfig.url);
+            dbConfig.dbExecutor = DbExecutor.getDbExecutor(dbConfig.url);
+            dbConfig.url = appendUrlSuffix(dbConfig.url, dbConfig.dbExecutor.getUrlSuffix());
         }
 
         databaseConfigs = databaseConfigList.stream().collect(Collectors.toMap(x -> x.name, x -> x, (a, b) -> a));
+    }
+
+    static String appendUrlSuffix(String url, String urlSuffix) {
+        if (StringUtils.isBlank(urlSuffix)) {
+            return url;
+        }
+
+        if (url.endsWith("?") || url.endsWith("&")) {
+            return url + urlSuffix;
+        }
+        if (url.contains("?")) {
+            return url + "&" + urlSuffix;
+        }
+
+        return url + "?" + urlSuffix;
     }
 
     static void initializeDefaultConfig() {
