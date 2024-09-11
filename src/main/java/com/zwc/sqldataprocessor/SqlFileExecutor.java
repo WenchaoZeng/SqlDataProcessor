@@ -56,7 +56,7 @@ public class SqlFileExecutor {
             // 数据库查询
             if (statement instanceof SqlStatement) {
                 SqlStatement sqlStatement = (SqlStatement) statement;
-                logPrinter.accept("SQL: " + sqlStatement.databaseName);
+                logPrinter.accept("执行SQL (DB名: " + sqlStatement.databaseName + ")");
                 logPrinter.accept(sqlStatement.sql);
                 DataList dataList = SqlExecutor.exec(sqlStatement, tables);
                 lastResultName = sqlStatement.resultName;
