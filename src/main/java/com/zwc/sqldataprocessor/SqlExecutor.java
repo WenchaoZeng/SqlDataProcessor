@@ -28,7 +28,6 @@ public class SqlExecutor {
     }
 
     public static DataList execRawSql(String sql, String databaseName) {
-
         FileHelper.writeOutputFile("./current.sql", sql);
         DatabaseConfig dbConfig = DatabaseConfigLoader.getDbConfig(databaseName);
         try {
