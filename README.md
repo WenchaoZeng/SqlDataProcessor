@@ -1,6 +1,6 @@
 # SqlDataProcessor
 
-一个基于sql的数据处理工具, 可以通过写sql的方式对excel, csv, json, 跨库mysql表等进行数据处理和加工.
+一个基于sql的数据处理工具, 可以通过写sql的方式对excel, csv, json, 跨库mysql表等进行数据处理和加工. 支持数据库: h2, mysql, postgresql, sqlite.
 
 [演示视频](https://www.bilibili.com/video/BV1ou4y1R7tj/)
 

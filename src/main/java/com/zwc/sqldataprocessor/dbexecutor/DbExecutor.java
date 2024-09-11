@@ -15,6 +15,7 @@ public abstract class DbExecutor {
         dbExecutors.add(new MySqlDbExecutor());
         dbExecutors.add(new H2DbExecutor());
         dbExecutors.add(new PostgreSqlDbExecutor());
+        dbExecutors.add(new SqLiteDbExecutor());
     }
 
     public static DbExecutor getDbExecutor(String url) {
