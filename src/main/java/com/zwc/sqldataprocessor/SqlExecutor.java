@@ -140,7 +140,7 @@ public class SqlExecutor {
 
                 String tableReplacement = "";
                 if (statement.tempTables) { // 构建临时表
-                    String tempTableName = "_temp_" + tableName.replace("$", "");
+                    String tempTableName = "_sqldataprocessor_temp_" + tableName.replace("$", "");
 
                     if (!createdTempTables.contains(tempTableName)) {
 
