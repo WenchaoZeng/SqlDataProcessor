@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 public class JsonImporter implements Importer {
 
     @Override
-    public DataList doImport(byte[] content, String sheetName) {
+    public DataList doImport(byte[] content, String sheetName, int headRowNo) {
 
         // 读取json
         String contentStr = new String(content);

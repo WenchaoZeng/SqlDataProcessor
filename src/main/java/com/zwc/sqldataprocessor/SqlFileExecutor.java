@@ -13,6 +13,7 @@ import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import com.zwc.sqldataprocessor.entity.sql.Statement;
+import org.apache.commons.lang3.StringUtils;
 
 public class SqlFileExecutor {
 
@@ -46,7 +47,7 @@ public class SqlFileExecutor {
             // 导入
             if (statement instanceof ImportStatement) {
                 ImportStatement importStatement = (ImportStatement)statement;
-                logPrinter.accept("导入: " + importStatement.filePath + (importStatement.sheetName != null ? ", sheet: " + importStatement.sheetName : ""));
+                logPrinter.accept("导入: " + importStatement.filePath + (StringUtils.isNotBlank(importStatement.sheetName) ? ", sheet: " + importStatement.sheetName : ""));
                 DataList dataList = ImportExecutor.doImport(importStatement);
                 tables.put(importStatement.resultName, dataList);
                 lastResultName = importStatement.resultName;

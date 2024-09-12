@@ -55,7 +55,7 @@ public class ImportExecutor {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        DataList table = importer.doImport(fileContent, statement.sheetName);
+        DataList table = importer.doImport(fileContent, statement.sheetName, statement.headRowNo);
 
         removeEmptyColumn(table);
         calculateColumnType(table);

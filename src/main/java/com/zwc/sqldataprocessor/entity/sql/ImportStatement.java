@@ -16,6 +16,11 @@ public class ImportStatement implements Statement {
     public String sheetName;
 
     /**
+     * 表头行的行号
+     */
+    public int headRowNo = 1;
+
+    /**
      * 结果集名称
      */
     public String resultName;

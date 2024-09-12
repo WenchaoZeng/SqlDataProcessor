@@ -32,7 +32,7 @@ public class XlsImporter implements Importer {
     }
 
     @Override
-    public DataList doImport(byte[] content, String sheetName) {
+    public DataList doImport(byte[] content, String sheetName, int headRowNo) {
         DataList table = new DataList();
         Workbook book = null;
         try {
@@ -46,7 +46,7 @@ public class XlsImporter implements Importer {
         }
 
         Sheet sheet;
-        if (sheetName == null) {
+        if (StringUtils.isBlank(sheetName)) {
             sheet = book.getSheetAt(0);
         } else {
             sheet = book.getSheet(sheetName);
@@ -55,10 +55,19 @@ public class XlsImporter implements Importer {
             }
         }
 
+        if (headRowNo > sheet.getLastRowNum() + 1) {
+            throw new UserException("表头行号超出了sheet里的最大行数");
+        }
+
         for (int rowIndex = 0; rowIndex <= sheet.getLastRowNum(); ++rowIndex) {
             Row row = sheet.getRow(rowIndex);
             if (row == null) {
                 break;
+            }
+
+            // 跳过给定表头行号之前的行
+            if (rowIndex + 1 < headRowNo) {
+                continue;
             }
 
             // 行或列数据初始化

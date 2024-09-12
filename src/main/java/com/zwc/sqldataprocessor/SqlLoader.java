@@ -11,6 +11,7 @@ import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import com.zwc.sqldataprocessor.entity.sql.Statement;
+import org.apache.commons.lang3.StringUtils;
 
 public class SqlLoader {
     static boolean exportNulls;
@@ -75,6 +76,7 @@ public class SqlLoader {
                     statement.filePath = line.replace("# import ", "");
                     statement.filePath = removeResultNameClause(statement.filePath);
                     statement.sheetName = getSheetName(statement.filePath);
+                    statement.headRowNo = getHeadRowNo(statement.filePath);
                     statement.filePath = removeSheetName(statement.filePath);
                     statement.resultName = getResultName(line);
                     statements.add(statement);
@@ -157,6 +159,10 @@ public class SqlLoader {
         return index >= 0 ? line.substring(0, index) : line;
     }
 
+    /**
+     * 在文件路径后使用方括号包含着的就是sheet名称
+     * 示例: /root/test.xlsx[sheet名称]
+     */
     static String getSheetName(String filePath) {
         int extIndex = getExtIndex(filePath);
         int leftBracketIndex = filePath.indexOf("[", extIndex);
@@ -164,9 +170,57 @@ public class SqlLoader {
             return null;
         }
 
-        return filePath.substring(leftBracketIndex + 1)
-            .replace("]", "")
-            .trim();
+        int rightBracketIndex = filePath.indexOf("]", leftBracketIndex + 1);
+        if (rightBracketIndex < 0) {
+            rightBracketIndex = filePath.length();
+        }
+
+        return filePath.substring(leftBracketIndex + 1, rightBracketIndex).trim();
+    }
+
+    /**
+     * 在文件路径后第二个方括号包含着的就是表头行号
+     * 示例: /root/test.xlsx[sheet名称][2]
+     */
+    static int getHeadRowNo(String filePath) {
+        int extIndex = getExtIndex(filePath);
+        int leftBracketIndex = filePath.indexOf("[", extIndex);
+        if (leftBracketIndex < 0) {
+            return 1;
+        }
+
+        int rightBracketIndex = filePath.indexOf("]", leftBracketIndex + 1);
+        if (rightBracketIndex < 0) {
+            return 1;
+        }
+
+        int leftBracketIndex2 = filePath.indexOf("[", rightBracketIndex + 1);
+        if (leftBracketIndex2 < 0) {
+            return 1;
+        }
+
+        int rightBracketIndex2 = filePath.indexOf("]", leftBracketIndex2 + 1);
+        if (rightBracketIndex2 < 0) {
+            return 1;
+        }
+
+        String rowNoStr = filePath.substring(leftBracketIndex2 + 1, rightBracketIndex2).trim();
+        if (StringUtils.isBlank(rowNoStr)) {
+            return 1;
+        }
+
+        int rowNo;
+        try {
+            rowNo = Integer.parseInt(rowNoStr);
+        } catch (NumberFormatException e) {
+            throw new UserException("表头行号必须是一个整数: " + rowNoStr);
+        }
+
+        if (rowNo < 1) {
+            throw new UserException("表头行号必须是一个正整数: " + rowNoStr);
+        }
+
+        return rowNo;
     }
 
     static String removeSheetName(String filePath) {
