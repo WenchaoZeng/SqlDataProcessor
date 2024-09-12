@@ -183,6 +183,7 @@ public class SqlLoader {
      * 获取文件后缀的下标
      */
     static int getExtIndex(String filePath) {
+        filePath = filePath.toLowerCase();
         for (String ext : ImportExecutor.importers.keySet()) {
             int index = filePath.lastIndexOf(ext);
             if (index > 0) {
