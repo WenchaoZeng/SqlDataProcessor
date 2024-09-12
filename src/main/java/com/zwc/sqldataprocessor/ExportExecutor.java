@@ -24,15 +24,21 @@ public class ExportExecutor {
         Exporter exporter = statement.exportXlsx ? new XlsxExporter() : new CsvExporter();
         byte[] bytes = exporter.export(table, statement.exportNulls);
 
-        // 写入导出文件
-        if (path == null) { // 默认文件名为数据集的名称
+        // 使用数据集的名称作为导出名称
+        if (path == null) {
             path = String.format("./%s.%s", resultName, exporter.getExtension());
             path = FileHelper.writeOutputFile(path, bytes);
             return path;
-        } else if (!path.contains("/") && !path.contains("\\")) { // 指定一个文件名称
-            if (!path.endsWith(exporter.getExtension())) { // 尝试自动添加文件后缀
-                path = String.format("./%s.%s", path, exporter.getExtension());
-            }
+        }
+
+        // 自动添加文件后缀
+        if (!path.toLowerCase().endsWith(exporter.getExtension())) {
+            path = String.format("%s.%s", path, exporter.getExtension());
+        }
+
+        // 仅指定一个文件名称
+        if (!path.contains("/") && !path.contains("\\")) {
+            path = "./"  + path;
             path = FileHelper.writeOutputFile(path, bytes);
             return path;
         }

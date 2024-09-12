@@ -74,21 +74,37 @@ select 1 as a;
 # import /Users/xxx/Downloads/xxx.csv
 ```
 
-针对xls和xlsx文件, 如果想指定导入具体的一个sheet(如果不指定, 默认是导入第一个sheet), 可以这样:
+针对xls和xlsx导入, 可以指定导入具体的一个sheet(如果不指定, 默认是导入第一个sheet), 也可以指定表头行号(如果不指定, 默认为第一行). 
+
+示例1: 指定sheet名称
 
 ```sql
 # import /Users/xxx/Downloads/xxx.xlsx[sheet名称1]
 ```
 
-json的根节点可以是数组或对象. 如果json的根节点是一个对象, 可以指定导入具体的内嵌字段, 多层级用`.`分隔, 比如:
+示例2: 指定sheet名称和表头行号
 
 ```sql
-# import /Users/xxx/Downloads/xxx.json[字段1.字段2]
+# import /Users/xxx/Downloads/xxx.xlsx[sheet名称1][2]
+```
+
+示例3: 只指定表头行号
+
+```sql
+# import /Users/xxx/Downloads/xxx.xlsx[][2]
+```
+
+针对json的导入, 根节点可以是数组或对象. 如果json的根节点是一个对象, 可以指定导入具体的内嵌属性, 多层级用`.`分隔.
+
+示例:
+
+```sql
+# import /Users/xxx/Downloads/xxx.json[属性1.属性2]
 ```
 
 ## 使用 `# xxx` 来指定一个数据库连接名称和紧跟着一个或多个SQL语句, 以最后一个SQL语句执行结果作为本次的结果
 
-示例1
+示例1:
 
 ```sql
 # h2
@@ -154,20 +170,27 @@ select * from $table temp;
 
 ## 使用 `# export`  来导出上一个执行的结果集
 
-默认情况下, 最后一个执行的结果集会被自动导出和打开. `export` 这个命令主要用途是用来在一个sql文件的运行阶段导出各个不同的结果集, 或者想自己指定结果文件的名称, 路径或格式.
+默认情况下, 最后一个执行的结果集会被自动导出和打开. `export` 这个命令主要用途是用来在一个sql文件的运行阶段导出多个不同的结果集, 或者想自己指定结果文件的名称, 路径或格式.
+
+示例1: 使用默认路径和文件名, 文件名为数据集的名称
 
 ```sql
--- 使用默认路径和文件名
 # export
+```
 
--- 指定导出文件的名称
+示例2: 仅指定文件名
+
+```sql
 # export 这是一个文件名
+```
 
--- 使用指定的完整路径
+示例2: 指定完整的文件路径
+
+```sql
 # export /Users/wenchaozeng/Downloads/aa.csv
 ```
 
-如果指定了一个文件的后缀, 比如`.csv`或`.xlsx`, 则会自动切换到对应的文件格式做导出.
+如果指定了一个文件的后缀, 目前支持`.csv`和`.xlsx`, 则会自动使用对应的文件格式做导出.
 
 ## 使用 `##` 或 `--` 或 `#` 来添加注释
 
