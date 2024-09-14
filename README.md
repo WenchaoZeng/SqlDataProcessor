@@ -237,8 +237,22 @@ from test_table2
 
 ## 临时表模式
 
-默认情况下, 如果一个sql里引用了结果集, 结果集会以子查询的方式嵌入到sql中. 如果结果集数据量很大, 会导致子查询的sql很大, 从而导致超出java里String的最大容量, 或者超出mysql数据库可接收的最大sql长度.
+默认情况下, 如果一个sql里引用了结果集, 结果集会以子查询的方式嵌入到sql中. 如果结果集数据量很大, 会导致子查询的sql很大, 从而超出java里String的最大容量, 或者超出mysql数据库可接收的最大sql长度.
 
-使用临时表模式, 则会预先把结果集的数据分批导入到临时表中, 然后sql会直接从临时表查询结果集, 这样sql就比较短. 
+使用临时表模式, 则会预先把结果集的数据分批导入到临时表中, 然后sql会直接从临时表查询结果集, 这样sql就比较短.
 
-使用`# temptables`打开临时表模式, 使用`# -temptables`关闭临时表模式. 默认: 关闭临时表模式.
+请在数据库配置文件中的相应数据库加入`useTempTables`属性来切换到临时表模式.
+
+示例:
+
+```json
+
+{
+    "name":"mysql",
+    "password":"123456",
+    "url":"jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf8",
+    "userName":"root",
+    "useTempTables": true
+}
+
+```

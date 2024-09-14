@@ -15,6 +15,7 @@ public class SqLiteDbExecutor extends DbExecutor {
         DatabaseConfig config = new DatabaseConfig();
         config.name = "sqlite";
         config.url = "jdbc:sqlite::memory:";
+        config.useTempTables = true;
         return config;
     }
 

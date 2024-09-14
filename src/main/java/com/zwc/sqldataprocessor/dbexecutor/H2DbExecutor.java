@@ -15,6 +15,7 @@ public class H2DbExecutor extends DbExecutor {
         DatabaseConfig config = new DatabaseConfig();
         config.name = "h2";
         config.url = "jdbc:h2:mem:;DATABASE_TO_UPPER=FALSE";
+        config.useTempTables = true;
         return config;
     }
 
