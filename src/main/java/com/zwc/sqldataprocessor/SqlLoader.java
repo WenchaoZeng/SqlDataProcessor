@@ -16,12 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 public class SqlLoader {
     static boolean exportNulls;
     static boolean exportXlsx;
-    static boolean tempTables;
 
     public static List<Statement> loadSql(String filePath) {
         exportNulls = false;
         exportXlsx = false;
-        tempTables = false;
         String fileContent = FileHelper.readFile(filePath);
         List<Statement> statements = new ArrayList<>();
 
@@ -60,16 +58,6 @@ public class SqlLoader {
                     continue;
                 }
 
-                if (lowerLine.equals("# temptables")) {
-                    tempTables = true;
-                    continue;
-                }
-
-                if (lowerLine.equals("# -temptables")) {
-                    tempTables = false;
-                    continue;
-                }
-
                 // 导入
                 if (line.startsWith("# import ")) {
                     ImportStatement statement = new ImportStatement();
@@ -105,7 +93,6 @@ public class SqlLoader {
                     statement.databaseName = databaseName;
                     statement.sql = "";
                     statement.resultName = getResultName(line);
-                    statement.tempTables = tempTables;
                     statements.add(statement);
                     continue;
                 }

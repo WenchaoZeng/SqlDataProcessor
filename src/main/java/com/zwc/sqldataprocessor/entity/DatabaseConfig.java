@@ -10,5 +10,11 @@ public class DatabaseConfig implements Serializable {
     public String userName;
     public String password;
 
+    /**
+     * 使用临时表的方式来引用数据集
+     * 如果配置为否(默认), 则使用子查询的方式来引用数据集
+     */
+    public boolean useTempTables;
+
     public DbExecutor dbExecutor;
 }
