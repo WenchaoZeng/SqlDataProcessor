@@ -246,7 +246,6 @@ from test_table2
 示例:
 
 ```json
-
 {
     "name":"mysql",
     "password":"123456",
@@ -254,5 +253,4 @@ from test_table2
     "userName":"root",
     "useTempTables": true
 }
-
 ```
