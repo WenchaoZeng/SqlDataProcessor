@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DataList;
+import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.EndStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
@@ -31,8 +32,7 @@ public class SqlFileExecutor {
 
         List<Statement> statements = SqlLoader.loadSql(filePath);
         if (statements.size() <= 0) {
-            logPrinter.accept("文件里没有可执行的sql命令");
-            return;
+            throw new UserException("SQL文件里没有可执行的命令");
         }
 
         Map<String, DataList> tables = new HashMap<>();
@@ -57,7 +57,7 @@ public class SqlFileExecutor {
             // 数据库查询
             if (statement instanceof SqlStatement) {
                 SqlStatement sqlStatement = (SqlStatement) statement;
-                logPrinter.accept("执行SQL (DB名: " + sqlStatement.databaseName + ")");
+                logPrinter.accept("执行SQL (" + sqlStatement.databaseName + "): ");
                 logPrinter.accept(sqlStatement.sql);
                 DataList dataList = SqlExecutor.exec(sqlStatement, tables);
                 lastResultName = sqlStatement.resultName;
