@@ -1,2 +1,1 @@
 待开发功能:
-    制作一个idea/datagrip插件

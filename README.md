@@ -225,9 +225,9 @@ from test_table2
 ;
 ```
 
-## 空值null的导出显示控制
+## 空值`null`的导出控制
 
-默认情况下, null值会在导出时候显示成空字符串. 可以使用`# exportnulls`来指定在导出文件的时候, null值被导出为`<null>`, 这样可以看出来具体哪个是null值, 与空字符串作区分. 可以使用`# -exportnulls`来恢复默认行为, 即null值被导出为空白, 和空字符串显示一样.
+默认情况下, `null`值会在导出时候显示成空字符串. 可以使用`# exportnulls`来指定在导出文件的时候, `null`值被导出为`<null>`, 这样可以看出来具体哪个是`null`值, 与空字符串作区分. 可以使用`# -exportnulls`来恢复默认行为, 即`null`值被导出为空白, 和空字符串显示一样.
 
 ## xlsx格式和csv格式的切换
 
@@ -254,3 +254,11 @@ from test_table2
     "useTempTables": true
 }
 ```
+
+## 在DataGrip中配置一键运行
+
+DataGrip是支持配置外部工具的, 配置完毕后, 可以实现右键运行SQL文件或快捷键触发运行. 详细步骤请参照官方文档: [External tools](https://www.jetbrains.com/help/datagrip/configuring-third-party-tools.html).
+
+配置示例:
+
+<img src="./external_tools.jpg" alt="DataGrip配置示例" width="600" />
