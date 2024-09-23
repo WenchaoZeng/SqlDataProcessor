@@ -16,5 +16,10 @@ public class DatabaseConfig implements Serializable {
      */
     public boolean useTempTables;
 
+    /**
+     * 插入临时表时的批量大小
+     */
+    public Integer tempTableBatchSize;
+
     public DbExecutor dbExecutor;
 }

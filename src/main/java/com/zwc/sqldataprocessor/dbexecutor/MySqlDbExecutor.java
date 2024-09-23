@@ -31,7 +31,7 @@ public class MySqlDbExecutor extends DbExecutor {
 
     @Override
     public String getSqlAfterConnect() {
-        return "SET SESSION group_concat_max_len = 1000000;";
+        return "SET SESSION group_concat_max_len = 4294967295;";
     }
 
     @Override
