@@ -19,7 +19,7 @@ public class DatabaseConfig implements Serializable {
     /**
      * 插入临时表时的批量大小
      */
-    public Integer tempTableBatchSize;
+    public Integer uploadBatchSize;
 
     public DbExecutor dbExecutor;
 }

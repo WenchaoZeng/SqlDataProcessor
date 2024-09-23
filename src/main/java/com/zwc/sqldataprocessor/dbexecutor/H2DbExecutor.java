@@ -16,7 +16,7 @@ public class H2DbExecutor extends DbExecutor {
         config.name = "h2";
         config.url = "jdbc:h2:mem:;DATABASE_TO_UPPER=FALSE";
         config.useTempTables = true;
-        config.tempTableBatchSize = 1000;
+        config.uploadBatchSize = 1000;
         return config;
     }
 

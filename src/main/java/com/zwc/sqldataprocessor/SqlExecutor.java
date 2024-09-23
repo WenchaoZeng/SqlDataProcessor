@@ -153,7 +153,7 @@ public class SqlExecutor {
                         execRawSql(createTempTableSql, statement.databaseName);
 
                         // 分批导入数据
-                        int batchSize = dbConfig.tempTableBatchSize != null ? dbConfig.tempTableBatchSize : 1000;
+                        int batchSize = dbConfig.uploadBatchSize != null ? dbConfig.uploadBatchSize : 1000;
                         List<DataList> dataLists = table.split(batchSize);
                         for (DataList dataList : dataLists) {
                             StringBuilder builder = new StringBuilder();

@@ -239,7 +239,7 @@ from test_table2
 
 使用临时表模式, 则会预先把结果集的数据分批导入到临时表中, 然后SQL运行时会直接从临时表查询结果集, 这样SQL就比较短.
 
-请在数据库配置文件中的相应数据库加入`useTempTables`属性来切换到临时表模式. 为防止一个批次里INSERT的数据太多导致SQL太长报错, 数据是分批INSERT到临时表的, 默认是1000条一批次, 如果要调整可以使用`tempTableBatchSize`属性来调整.
+请在数据库配置文件中的相应数据库加入`useTempTables`属性来切换到临时表模式. 为防止一个批次里INSERT的数据太多导致SQL太长报错, 数据是分批INSERT到临时表的, 默认是1000条一批次, 如果要调整可以使用`uploadBatchSize`属性来调整.
 
 示例:
 
@@ -250,7 +250,7 @@ from test_table2
     "url":"jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf8",
     "userName":"root",
     "useTempTables": true,
-    "tempTableBatchSize": 100
+    "uploadBatchSize": 100
 }
 ```
 

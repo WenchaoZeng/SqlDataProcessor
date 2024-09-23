@@ -16,7 +16,7 @@ public class SqLiteDbExecutor extends DbExecutor {
         config.name = "sqlite";
         config.url = "jdbc:sqlite::memory:";
         config.useTempTables = true;
-        config.tempTableBatchSize = 1000;
+        config.uploadBatchSize = 1000;
         return config;
     }
 
