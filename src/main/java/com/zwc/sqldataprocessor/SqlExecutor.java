@@ -126,10 +126,6 @@ public class SqlExecutor {
 
     static String renderSql(DatabaseConfig dbConfig, SqlStatement statement, Map<String, DataList> tables, Set<String> tempTableNames) {
 
-        // 给临时表名加个唯一id, 防止表名重复
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
-        String tablePrefix = dateFormat.format(new Date()) + "_" + UUID.randomUUID().toString().replace("-", "");
-
         StringBuilder sqlBuilder = new StringBuilder();
         for (String sqlLine : statement.sql.split("\n")) {
 
@@ -155,7 +151,7 @@ public class SqlExecutor {
 
                 String tableReplacement = "";
                 if (dbConfig.useTempTables || dbConfig.useRealTables) { // 构建临时表
-                    String tempTableName = "_sqldataprocessor_" + tablePrefix + "_" + tableName.replace("$", "");
+                    String tempTableName = "_sql_" + System.currentTimeMillis() + "_" + tableName.replace("$", "");
 
                     if (!tempTableNames.contains(tempTableName)) {
                         tempTableNames.add(tempTableName);
