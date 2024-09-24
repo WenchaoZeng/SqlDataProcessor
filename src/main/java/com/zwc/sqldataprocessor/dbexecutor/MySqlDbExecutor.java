@@ -64,6 +64,12 @@ public class MySqlDbExecutor extends DbExecutor {
         }
     }
 
+    @Override
+    public void renderInsertSql(StringBuilder builder, DataList table, String targetTableName) {
+        builder.append("insert into " + targetTableName + " ");
+        renderSelectSql(builder, table);
+    }
+
     String renderSelectClause(List<String> rowValues, DataList table, boolean includeColumnName) {
         List<String> selectColumns = new ArrayList<>();
         for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {

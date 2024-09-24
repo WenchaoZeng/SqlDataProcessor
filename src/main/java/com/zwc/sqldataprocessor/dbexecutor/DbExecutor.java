@@ -7,6 +7,7 @@ import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
+import org.apache.commons.lang3.StringUtils;
 
 public abstract class DbExecutor {
     public final static List<DbExecutor> dbExecutors = new ArrayList<>();
@@ -34,6 +35,7 @@ public abstract class DbExecutor {
     public abstract String renderDropTableSql(String tableName, boolean isTemporary);
     public abstract String renderCreateTableSql(DataList table, String tableName, boolean isTemporary);
     public abstract void renderSelectSql(StringBuilder builder, DataList table);
+    public abstract void renderInsertSql(StringBuilder builder, DataList table, String targetTableName);
 
     public static StringBuilder commonCreateTableSql(DataList table, String tableName, boolean isTemporary) {
         StringBuilder builder = new StringBuilder();
@@ -62,5 +64,45 @@ public abstract class DbExecutor {
         }
         builder.append(") ");
         return builder;
+    }
+
+    static void renderCommonValuesClause(StringBuilder builder, DataList table) {
+        builder.append(" VALUES\n");
+        for (int rowIndex = 0; rowIndex < table.rows.size(); ++rowIndex) {
+            String valueClause = renderCommonValueClause(table.rows.get(rowIndex), table);
+            builder.append(valueClause);
+            if (rowIndex < table.rows.size() - 1) {
+                builder.append(", \n");
+            }
+        }
+    }
+
+    static String renderCommonValueClause(List<String> rowValues, DataList table) {
+        List<String> values = new ArrayList<>();
+        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
+            ColumnType type = table.columnTypes.get(columnIndex);
+            String value = rowValues.get(columnIndex);
+            if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
+                if (StringUtils.isBlank(value)) {
+                    values.add(null);
+                } else {
+                    values.add(value);
+                }
+            } else if (type == ColumnType.DATETIME) {
+                if (StringUtils.isBlank(value)) {
+                    values.add(null);
+                } else {
+                    values.add("'" + value + "'");
+                }
+            } else {
+                if (value == null) {
+                    values.add(null);
+                } else {
+                    value = value.replace("'", "''");
+                    values.add("'" + value + "'");
+                }
+            }
+        }
+        return "(" + String.join(", ", values) + ")";
     }
 }

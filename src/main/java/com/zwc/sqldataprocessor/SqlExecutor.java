@@ -162,12 +162,13 @@ public class SqlExecutor {
                         execRawSql(createTempTableSql, statement.databaseName);
 
                         // 分批导入数据
-                        List<DataList> dataLists = table.split(dbConfig.uploadBatchSize);
-                        for (DataList dataList : dataLists) {
-                            StringBuilder builder = new StringBuilder();
-                            builder.append("insert into " + tempTableName + " ");
-                            renderSelectSql(builder, dataList, dbConfig.dbExecutor);
-                            execRawSql(builder.toString(), statement.databaseName);
+                        if (table.rows.size() > 0) {
+                            List<DataList> dataLists = table.split(dbConfig.uploadBatchSize);
+                            for (DataList dataList : dataLists) {
+                                StringBuilder builder = new StringBuilder();
+                                dbConfig.dbExecutor.renderInsertSql(builder, dataList, tempTableName);
+                                execRawSql(builder.toString(), statement.databaseName);
+                            }
                         }
                     }
 

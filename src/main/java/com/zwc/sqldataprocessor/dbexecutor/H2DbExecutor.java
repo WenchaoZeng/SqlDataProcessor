@@ -7,7 +7,6 @@ import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
-import org.apache.commons.lang3.StringUtils;
 
 public class H2DbExecutor extends DbExecutor {
     @Override
@@ -74,43 +73,13 @@ public class H2DbExecutor extends DbExecutor {
         }
         builder.append(String.join(", ", selectColumns));
         builder.append("\n");
-        builder.append("from VALUES\n");
-
-        for (int rowIndex = 0; rowIndex < table.rows.size(); ++rowIndex) {
-            String valueClause = renderValueClause(table.rows.get(rowIndex), table);
-            builder.append(valueClause);
-            if (rowIndex < table.rows.size() - 1) {
-                builder.append(", \n");
-            }
-        }
+        builder.append("from");
+        renderCommonValuesClause(builder, table);
     }
 
-    String renderValueClause(List<String> rowValues, DataList table) {
-        List<String> values = new ArrayList<>();
-        for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
-            ColumnType type = table.columnTypes.get(columnIndex);
-            String value = rowValues.get(columnIndex);
-            if (type == ColumnType.INT || type == ColumnType.DECIMAL) {
-                if (StringUtils.isBlank(value)) {
-                    values.add(null);
-                } else {
-                    values.add(value);
-                }
-            } else if (type == ColumnType.DATETIME) {
-                if (StringUtils.isBlank(value)) {
-                    values.add(null);
-                } else {
-                    values.add("'" + value + "'");
-                }
-            } else {
-                if (value == null) {
-                    values.add(null);
-                } else {
-                    value = value.replace("'", "''");
-                    values.add("'" + value + "'");
-                }
-            }
-        }
-        return "(" + String.join(", ", values) + ")";
+    @Override
+    public void renderInsertSql(StringBuilder builder, DataList table, String targetTableName) {
+        builder.append("insert into " + targetTableName + " ");
+        renderCommonValuesClause(builder, table);
     }
 }
