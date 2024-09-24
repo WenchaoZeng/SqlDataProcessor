@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
@@ -151,7 +152,7 @@ public class SqlExecutor {
 
                 String tableReplacement = "";
                 if (dbConfig.useTempTables || dbConfig.useRealTables) { // 构建临时表
-                    String tempTableName = "_sql_" + System.currentTimeMillis() + "_" + tableName.replace("$", "");
+                    String tempTableName = "_sql_" + System.currentTimeMillis() + "_" + new Random().nextInt() + "_" + tableName.replace("$", "");
 
                     if (!tempTableNames.contains(tempTableName)) {
                         tempTableNames.add(tempTableName);
