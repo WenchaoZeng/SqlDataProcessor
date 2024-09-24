@@ -3,7 +3,6 @@ package com.zwc.sqldataprocessor.dbexecutor;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.zwc.sqldataprocessor.DatabaseConfigLoader;
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
@@ -32,13 +31,17 @@ public abstract class DbExecutor {
     public abstract String getUrlSuffix();
     public abstract String getSqlAfterConnect();
     public abstract void translateSqlException(Exception ex);
-    public abstract String renderDropTempTableSql(String tableName);
-    public abstract String renderCreateTempTableSql(DataList table, String tableName);
+    public abstract String renderDropTableSql(String tableName, boolean isTemporary);
+    public abstract String renderCreateTableSql(DataList table, String tableName, boolean isTemporary);
     public abstract void renderSelectSql(StringBuilder builder, DataList table);
 
-    public static StringBuilder commonCreateTempTableSql(DataList table, String tableName) {
+    public static StringBuilder commonCreateTableSql(DataList table, String tableName, boolean isTemporary) {
         StringBuilder builder = new StringBuilder();
-        builder.append("create temporary table " + tableName + "(");
+        builder.append("create");
+        if (isTemporary) {
+            builder.append(" temporary");
+        }
+        builder.append(" table " + tableName + "(");
         for (int index = 0; index < table.columns.size(); ++index) {
             builder.append("`" + table.columns.get(index) + "` ");
 

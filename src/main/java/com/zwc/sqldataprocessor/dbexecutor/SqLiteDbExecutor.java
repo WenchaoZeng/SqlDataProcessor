@@ -16,7 +16,6 @@ public class SqLiteDbExecutor extends DbExecutor {
         config.name = "sqlite";
         config.url = "jdbc:sqlite::memory:";
         config.useTempTables = true;
-        config.uploadBatchSize = 1000;
         return config;
     }
 
@@ -43,14 +42,18 @@ public class SqLiteDbExecutor extends DbExecutor {
     }
 
     @Override
-    public String renderDropTempTableSql(String tableName) {
+    public String renderDropTableSql(String tableName, boolean isTemporary) {
         return String.format("drop table if exists %s;", tableName);
     }
 
     @Override
-    public String renderCreateTempTableSql(DataList table, String tableName) {
+    public String renderCreateTableSql(DataList table, String tableName, boolean isTemporary) {
         StringBuilder builder = new StringBuilder();
-        builder.append("create temporary table " + tableName + "(");
+        builder.append("create");
+        if (isTemporary) {
+            builder.append(" temporary");
+        }
+        builder.append(" table " + tableName + "(");
         for (int index = 0; index < table.columns.size(); ++index) {
             builder.append("\"" + table.columns.get(index) + "\" ");
 

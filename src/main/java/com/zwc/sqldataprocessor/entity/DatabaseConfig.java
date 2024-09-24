@@ -17,9 +17,15 @@ public class DatabaseConfig implements Serializable {
     public boolean useTempTables;
 
     /**
+     * 使用真实表的方式来引用数据集
+     * 如果配置为否(默认), 则使用子查询的方式来引用数据集
+     */
+    public boolean useRealTables;
+
+    /**
      * 插入临时表时的批量大小
      */
-    public Integer uploadBatchSize;
+    public int uploadBatchSize = 1000;
 
     public DbExecutor dbExecutor;
 }

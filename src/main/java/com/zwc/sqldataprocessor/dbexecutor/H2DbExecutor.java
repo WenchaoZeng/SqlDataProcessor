@@ -16,7 +16,6 @@ public class H2DbExecutor extends DbExecutor {
         config.name = "h2";
         config.url = "jdbc:h2:mem:;DATABASE_TO_UPPER=FALSE";
         config.useTempTables = true;
-        config.uploadBatchSize = 1000;
         return config;
     }
 
@@ -49,13 +48,13 @@ public class H2DbExecutor extends DbExecutor {
     }
 
     @Override
-    public String renderDropTempTableSql(String tableName) {
+    public String renderDropTableSql(String tableName, boolean isTemporary) {
         return String.format("drop table if exists %s;", tableName);
     }
 
     @Override
-    public String renderCreateTempTableSql(DataList table, String tableName) {
-        return commonCreateTempTableSql(table, tableName).toString();
+    public String renderCreateTableSql(DataList table, String tableName, boolean isTemporary) {
+        return commonCreateTableSql(table, tableName, isTemporary).toString();
     }
 
     @Override

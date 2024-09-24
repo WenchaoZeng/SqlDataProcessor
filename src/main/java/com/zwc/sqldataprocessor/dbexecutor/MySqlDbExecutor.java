@@ -40,13 +40,13 @@ public class MySqlDbExecutor extends DbExecutor {
     }
 
     @Override
-    public String renderDropTempTableSql(String tableName) {
-        return String.format("drop temporary table if exists %s;", tableName);
+    public String renderDropTableSql(String tableName, boolean isTemporary) {
+        return String.format("drop %s table if exists %s;", isTemporary ? "temporary" : "", tableName);
     }
 
     @Override
-    public String renderCreateTempTableSql(DataList table, String tableName) {
-        StringBuilder builder = commonCreateTempTableSql(table, tableName);
+    public String renderCreateTableSql(DataList table, String tableName, boolean isTemporary) {
+        StringBuilder builder = commonCreateTableSql(table, tableName, isTemporary);
         builder.append(" collate utf8mb4_general_ci CHARACTER SET utf8mb4");
         return builder.toString();
     }

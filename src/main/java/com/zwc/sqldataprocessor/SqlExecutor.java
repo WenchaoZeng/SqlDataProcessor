@@ -6,11 +6,14 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import com.zwc.sqldataprocessor.dbexecutor.DbExecutor;
 import com.zwc.sqldataprocessor.entity.DataList;
@@ -18,13 +21,22 @@ import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
-import org.apache.commons.lang3.StringUtils;
 
 public class SqlExecutor {
 
     public static DataList exec(SqlStatement statement, Map<String, DataList> tables) {
-        String rawSql = renderSql(statement, tables);
-        return execRawSql(rawSql, statement.databaseName);
+        DatabaseConfig dbConfig = DatabaseConfigLoader.getDbConfig(statement.databaseName);
+        Set<String> tempTableNames = new HashSet<>();
+        try {
+            String rawSql = renderSql(dbConfig, statement, tables, tempTableNames);
+            return execRawSql(rawSql, statement.databaseName);
+        } finally {
+            // 删除临时表
+            for (String tempTableName : tempTableNames) {
+                String dropTempTableSql = dbConfig.dbExecutor.renderDropTableSql(tempTableName, dbConfig.useTempTables);
+                execRawSql(dropTempTableSql, statement.databaseName);
+            }
+        }
     }
 
     public static DataList execRawSql(String sql, String databaseName) {
@@ -112,9 +124,12 @@ public class SqlExecutor {
         return table;
     }
 
-    static String renderSql(SqlStatement statement, Map<String, DataList> tables) {
-        DatabaseConfig dbConfig = DatabaseConfigLoader.getDbConfig(statement.databaseName);
-        Set<String> createdTempTables = new HashSet<>();
+    static String renderSql(DatabaseConfig dbConfig, SqlStatement statement, Map<String, DataList> tables, Set<String> tempTableNames) {
+
+        // 给临时表名加个唯一id, 防止表名重复
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+        String tablePrefix = dateFormat.format(new Date()) + "_" + UUID.randomUUID().toString().replace("-", "");
+
         StringBuilder sqlBuilder = new StringBuilder();
         for (String sqlLine : statement.sql.split("\n")) {
 
@@ -139,30 +154,24 @@ public class SqlExecutor {
                 DataList table = tables.get(tableName);
 
                 String tableReplacement = "";
-                if (dbConfig.useTempTables) { // 构建临时表
-                    String tempTableName = "_sqldataprocessor_temp_" + tableName.replace("$", "");
+                if (dbConfig.useTempTables || dbConfig.useRealTables) { // 构建临时表
+                    String tempTableName = "_sqldataprocessor_" + tablePrefix + "_" + tableName.replace("$", "");
 
-                    if (!createdTempTables.contains(tempTableName)) {
-
-                        // 删除已存在的临时表
-                        String dropTempTableSql = dbConfig.dbExecutor.renderDropTempTableSql(tempTableName);
-                        execRawSql(dropTempTableSql, statement.databaseName);
+                    if (!tempTableNames.contains(tempTableName)) {
+                        tempTableNames.add(tempTableName);
 
                         // 创建临时表
-                        String createTempTableSql = dbConfig.dbExecutor.renderCreateTempTableSql(table, tempTableName);
+                        String createTempTableSql = dbConfig.dbExecutor.renderCreateTableSql(table, tempTableName, dbConfig.useTempTables);
                         execRawSql(createTempTableSql, statement.databaseName);
 
                         // 分批导入数据
-                        int batchSize = dbConfig.uploadBatchSize != null ? dbConfig.uploadBatchSize : 1000;
-                        List<DataList> dataLists = table.split(batchSize);
+                        List<DataList> dataLists = table.split(dbConfig.uploadBatchSize);
                         for (DataList dataList : dataLists) {
                             StringBuilder builder = new StringBuilder();
                             builder.append("insert into " + tempTableName + " ");
                             renderSelectSql(builder, dataList, dbConfig.dbExecutor);
                             execRawSql(builder.toString(), statement.databaseName);
                         }
-
-                        createdTempTables.add(tempTableName);
                     }
 
                     tableReplacement = tempTableName + " ";
