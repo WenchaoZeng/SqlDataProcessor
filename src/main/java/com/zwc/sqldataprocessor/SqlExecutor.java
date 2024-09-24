@@ -152,7 +152,7 @@ public class SqlExecutor {
 
                 String tableReplacement = "";
                 if (dbConfig.useTempTables || dbConfig.useRealTables) { // 构建临时表
-                    String tempTableName = "_sql_" + System.currentTimeMillis() + "_" + new Random().nextInt() + "_" + tableName.replace("$", "");
+                    String tempTableName = "_sql_" + System.currentTimeMillis() + "_" + Math.abs(new Random().nextInt()) + "_" + tableName.replace("$", "");
 
                     if (!tempTableNames.contains(tempTableName)) {
                         tempTableNames.add(tempTableName);
