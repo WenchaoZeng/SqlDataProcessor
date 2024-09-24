@@ -254,6 +254,22 @@ from test_table2
 }
 ```
 
+## 使用持久化表作为临时表
+
+有时候在某些数据库里, 临时表的功能有限. 这时候, 可能想要使用持久化的表来作为临时表. 可以在数据库配置中指定`useRealTables`属性来开启使用持久化的表作为临时存储, 被引用数据集的临时表会自动在执行SQL前创建, 并在SQL执行完成后自动删除.
+
+示例:
+
+```json
+{
+    "name":"mysql",
+    "password":"123456",
+    "url":"jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf8",
+    "userName":"root",
+    "useRealTables": true
+}
+```
+
 ## 在DataGrip中配置一键运行
 
 DataGrip是支持配置外部工具的, 配置完毕后, 可以实现右键运行SQL文件或快捷键触发运行. 详细步骤请参照官方文档: [External tools](https://www.jetbrains.com/help/datagrip/configuring-third-party-tools.html).
