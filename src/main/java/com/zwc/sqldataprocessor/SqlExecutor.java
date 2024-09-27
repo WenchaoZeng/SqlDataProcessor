@@ -22,6 +22,7 @@ import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
+import org.apache.commons.collections4.CollectionUtils;
 
 public class SqlExecutor {
 
@@ -149,6 +150,9 @@ public class SqlExecutor {
             // 读取数据集
             for (String tableName : tableNames) {
                 DataList table = tables.get(tableName);
+                if (CollectionUtils.isEmpty(table.columns)) {
+                    throw new UserException("SQL中引用的数据集$" + tableName + "列个数为0, 无法执行查询");
+                }
 
                 String tableReplacement = "";
                 if (dbConfig.useTempTables || dbConfig.useRealTables) { // 构建临时表
