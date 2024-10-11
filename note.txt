@@ -1,2 +1,3 @@
 待开发功能:
     支持循环
+    mysql当一个sql里引用多次临时表的时候, 报错: java.sql.SQLException: Can't reopen table: 'temp'
