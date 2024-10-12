@@ -25,20 +25,6 @@ public class PostgreSqlDbExecutor extends DbExecutor {
     }
 
     @Override
-    public String getUrlSuffix() {
-        return null;
-    }
-
-    @Override
-    public String getSqlAfterConnect() {
-        return null;
-    }
-
-    @Override
-    public void translateSqlException(Exception ex) {
-    }
-
-    @Override
     public String renderDropTableSql(String tableName, boolean isTemporary) {
         return String.format("drop table if exists %s;", tableName);
     }

@@ -9,6 +9,7 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SqlExecutor {
 
@@ -128,6 +130,8 @@ public class SqlExecutor {
 
     static String renderSql(DatabaseConfig dbConfig, SqlStatement statement, Map<String, DataList> tables, Set<String> tempTableNames) {
 
+        Map<String, TempTableInfo> tempTableInfos = new HashMap<>();
+
         StringBuilder sqlBuilder = new StringBuilder();
         for (String sqlLine : statement.sql.split("\n")) {
 
@@ -154,17 +158,17 @@ public class SqlExecutor {
                     throw new UserException("SQL中引用的数据集$" + tableName + "列个数为0, 无法执行查询");
                 }
 
-                String tableReplacement = "";
-                if (dbConfig.useTempTables || dbConfig.useRealTables) { // 构建临时表
-                    String uuid = dbConfig.useTempTables ? "" : System.currentTimeMillis() + "" + Math.abs(new Random().nextInt());
-                    String tempTableName = "_sql" + uuid + "_" + tableName.replace("$", "");
-
-                    if (!tempTableNames.contains(tempTableName)) {
-                        tempTableNames.add(tempTableName);
+                // 构建临时表或真实表
+                if (dbConfig.useTempTables || dbConfig.useRealTables) {
+                    TempTableInfo tempTableInfo = tempTableInfos.get(tableName);
+                    if (tempTableInfo == null) {
+                        String uuid = dbConfig.useTempTables ? "" : System.currentTimeMillis() + "" + Math.abs(new Random().nextInt());
+                        String tempTableName = "_sql" + uuid + "_" + tableName.replace("$", "");
 
                         // 创建临时表
                         String createTempTableSql = dbConfig.dbExecutor.renderCreateTableSql(table, tempTableName, dbConfig.useTempTables);
                         execRawSql(createTempTableSql, statement.databaseName);
+                        tempTableNames.add(tempTableName);
 
                         // 分批导入数据
                         if (table.rows.size() > 0) {
@@ -175,19 +179,45 @@ public class SqlExecutor {
                                 execRawSql(builder.toString(), statement.databaseName);
                             }
                         }
+
+                        tempTableInfo = new TempTableInfo();
+                        tempTableInfo.tempTableName = tempTableName;
+                        tempTableInfos.put(tableName, tempTableInfo);
                     }
 
-                    tableReplacement = tempTableName + " ";
-                } else { // 构建数据集sql语句
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("(\n");
-                    renderSelectSql(builder, table, dbConfig.dbExecutor);
-                    builder.append(") ");
-                    tableReplacement = builder.toString();
+                    // 替换到原sql里
+                    String slot = "$" + tableName + " ";
+                    if (dbConfig.dbExecutor.supportReopenTempTables() || !dbConfig.useTempTables) { // 支持重用临时表
+                        sqlLine = sqlLine.replace(slot, tempTableInfo.tempTableName  + " ");
+                        continue;
+                    }
+
+                    // 不支持重用临时表
+                    while (sqlLine.contains(slot)) {
+                        tempTableInfo.referCount++;
+                        String currentTempTableName = tempTableInfo.tempTableName; // 第一次使用的原来的临时表名
+
+                        if (tempTableInfo.referCount > 1) { // 第二次以上使用要换一个临时表名
+                            currentTempTableName = tempTableInfo.tempTableName + tempTableInfo.referCount;
+                            String cloneTableSql = dbConfig.dbExecutor.renderCloneTempTables(tempTableInfo.tempTableName, currentTempTableName);
+                            execRawSql(cloneTableSql, statement.databaseName);
+                            tempTableNames.add(currentTempTableName);
+                        }
+
+                        sqlLine = StringUtils.replaceOnce(sqlLine, slot, currentTempTableName + " ");
+                    }
+
+                    continue;
                 }
 
+                // 构建数据集子查询语句
+                StringBuilder subQuerybuilder = new StringBuilder();
+                subQuerybuilder.append("(\n");
+                renderSelectSql(subQuerybuilder, table, dbConfig.dbExecutor);
+                subQuerybuilder.append(")");
+
                 // 替换到原sql里
-                sqlLine = sqlLine.replace("$" + tableName + " ", tableReplacement);
+                sqlLine = sqlLine.replace("$" + tableName + " ", subQuerybuilder.toString()  + " ");
             }
 
             sqlBuilder.append(sqlLine);
@@ -225,5 +255,10 @@ public class SqlExecutor {
         table.rows.clear();
 
         builder.append(" ) _sqldataprocessor_empty_ where 1 = 0");
+    }
+
+    static class TempTableInfo {
+        public String tempTableName;
+        public int referCount;
     }
 }

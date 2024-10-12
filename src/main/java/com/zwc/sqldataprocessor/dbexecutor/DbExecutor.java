@@ -29,13 +29,15 @@ public abstract class DbExecutor {
 
     public abstract DatabaseConfig getDefaultConfig();
     public abstract String getJdbcDriverName();
-    public abstract String getUrlSuffix();
-    public abstract String getSqlAfterConnect();
-    public abstract void translateSqlException(Exception ex);
+    public String getUrlSuffix() { return null; }
+    public String getSqlAfterConnect() { return null; }
+    public void translateSqlException(Exception ex) {}
     public abstract String renderDropTableSql(String tableName, boolean isTemporary);
     public abstract String renderCreateTableSql(DataList table, String tableName, boolean isTemporary);
     public abstract void renderSelectSql(StringBuilder builder, DataList table);
     public abstract void renderInsertSql(StringBuilder builder, DataList table, String targetTableName);
+    public boolean supportReopenTempTables() { return true; }
+    public String renderCloneTempTables(String sourceTableName, String targetTableName) { return null; }
 
     public static StringBuilder commonCreateTableSql(DataList table, String tableName, boolean isTemporary) {
         StringBuilder builder = new StringBuilder();

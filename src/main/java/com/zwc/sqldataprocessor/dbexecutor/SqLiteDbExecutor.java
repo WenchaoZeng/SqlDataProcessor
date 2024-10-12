@@ -25,16 +25,6 @@ public class SqLiteDbExecutor extends DbExecutor {
     }
 
     @Override
-    public String getUrlSuffix() {
-        return null;
-    }
-
-    @Override
-    public String getSqlAfterConnect() {
-        return null;
-    }
-
-    @Override
     public void translateSqlException(Exception ex) {
         if (ex instanceof org.sqlite.SQLiteException) {
             throw new UserException(ex.getMessage());

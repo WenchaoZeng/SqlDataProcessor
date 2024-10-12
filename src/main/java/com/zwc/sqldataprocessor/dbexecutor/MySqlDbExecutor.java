@@ -35,11 +35,6 @@ public class MySqlDbExecutor extends DbExecutor {
     }
 
     @Override
-    public void translateSqlException(Exception ex) {
-
-    }
-
-    @Override
     public String renderDropTableSql(String tableName, boolean isTemporary) {
         return String.format("drop %s table if exists %s;", isTemporary ? "temporary" : "", tableName);
     }
@@ -68,6 +63,16 @@ public class MySqlDbExecutor extends DbExecutor {
     public void renderInsertSql(StringBuilder builder, DataList table, String targetTableName) {
         builder.append("insert into " + targetTableName + " ");
         renderSelectSql(builder, table);
+    }
+
+    @Override
+    public boolean supportReopenTempTables() {
+        return false;
+    }
+
+    @Override
+    public String renderCloneTempTables(String sourceTableName, String targetTableName) {
+        return String.format("create temporary table %s as select * from %s;", targetTableName, sourceTableName);
     }
 
     String renderSelectClause(List<String> rowValues, DataList table, boolean includeColumnName) {
