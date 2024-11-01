@@ -19,6 +19,11 @@ import javax.swing.*;
  */
 public class FileHelper {
 
+    public static boolean exists(String path) {
+        Path filePath = Paths.get(path);
+        return Files.exists(filePath);
+    }
+
     public static void writeFile(String path, String content) {
         writeFile(path, content.getBytes());
     }
@@ -36,15 +41,12 @@ public class FileHelper {
     }
 
     public static String writeOutputFile(String path, byte[] bytes) {
-        ensureOutputFolderExists();
-
         path = getOutPath(path);
         writeFile(path, bytes);
         return path;
     }
 
     public static void appendOutFile(String path, String content) {
-        ensureOutputFolderExists();
         path = getOutPath(path);
         try {
             Path filePath = Paths.get(path);
@@ -70,7 +72,20 @@ public class FileHelper {
         }
     }
 
-    static String getOutPath(String fileName) {
+    public static void deleteFile(String path) {
+        try {
+            Path filePath = Paths.get(path);
+            if (!Files.exists(filePath)) {
+                return;
+            }
+            Files.delete(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getOutPath(String fileName) {
+        ensureOutputFolderExists();
         return "./output/" + fileName;
     }
 

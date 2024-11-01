@@ -9,7 +9,6 @@ import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.UserException;
-import com.zwc.sqldataprocessor.entity.sql.EndStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
@@ -69,13 +68,13 @@ public class SqlFileExecutor {
             if (statement instanceof ExportStatement) {
                 doExport(lastResultName, tables.get(lastResultName), (ExportStatement) statement, logPrinter);
             }
-
-            // 提前结束
-            if (statement instanceof EndStatement) {
-                logPrinter.accept("结束");
-                break;
-            }
         }
+
+        // 自动打开导出的文件
+        for (String exportedPath : ExportExecutor.exportedPaths) {
+            FileHelper.openFile(exportedPath);
+        }
+
     }
 
     static void doExport(String resultName, DataList dataList, ExportStatement statement, Consumer<String> logPrinter) {
@@ -84,9 +83,6 @@ public class SqlFileExecutor {
         String exportPath = ExportExecutor.export(resultName, dataList, statement);
         exportPath = Paths.get(exportPath).toFile().getAbsolutePath();
         logPrinter.accept("导出文件路径: " + exportPath);
-
-        // 自动打开
-        FileHelper.openFile(exportPath);
     }
 
     static void printStatus(String resultName, DataList dataList, Consumer<String> logPrinter, long startTime) {

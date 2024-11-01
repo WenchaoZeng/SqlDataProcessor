@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
-import com.zwc.sqldataprocessor.entity.sql.EndStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
@@ -34,7 +33,6 @@ public class SqlLoader {
                     // 确保最后有一个导出语句
                     tryAddExportToEnd(statements);
 
-                    statements.add(new EndStatement());
                     return statements;
                 }
 
@@ -67,6 +65,7 @@ public class SqlLoader {
                     statement.headRowNo = getHeadRowNo(statement.filePath);
                     statement.filePath = removeSheetName(statement.filePath);
                     statement.resultName = getResultName(line);
+                    validateResultName(statement.resultName);
                     statements.add(statement);
                     continue;
                 }
@@ -79,7 +78,15 @@ public class SqlLoader {
                     String exportFilePath = line.replace("# export", "").trim();
                     if (!exportFilePath.equals("")) {
                         statement.filePath = exportFilePath;
+
+                        // 从文件路径里提取出sheet的名称
+                        int sheetNameStartIndex = statement.filePath.indexOf("[");
+                        if (statement.filePath.endsWith("]") && sheetNameStartIndex >= 0) {
+                            statement.sheetName = statement.filePath.substring(sheetNameStartIndex + 1).replace("]", "").trim();
+                            statement.filePath = statement.filePath.substring(0, sheetNameStartIndex).trim();
+                        }
                     }
+
                     statements.add(statement);
                     continue;
                 }
@@ -93,6 +100,7 @@ public class SqlLoader {
                     statement.databaseName = databaseName;
                     statement.sql = "";
                     statement.resultName = getResultName(line);
+                    validateResultName(statement.resultName);
                     statements.add(statement);
                     continue;
                 }
@@ -118,6 +126,18 @@ public class SqlLoader {
         tryAddExportToEnd(statements);
 
         return statements;
+    }
+
+    /**
+     * 校验结果集的名称是否合法
+     */
+    static void validateResultName(String resultName) {
+        if (StringUtils.isBlank(resultName)) {
+            return;
+        }
+        if (resultName.contains("\\") || resultName.contains("/")) {
+            throw new UserException("结果集名称不能包含\\或/符号: " + resultName);
+        }
     }
 
     /**

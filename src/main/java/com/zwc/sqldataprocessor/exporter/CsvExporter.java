@@ -4,13 +4,14 @@ import java.io.IOException;
 
 import java.util.List;
 
+import com.zwc.sqldataprocessor.FileHelper;
 import com.zwc.sqldataprocessor.entity.DataList;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
 public class CsvExporter implements Exporter {
 
-    public byte[] export(DataList table, boolean exportNulls) {
+    public void export(String filePath, DataList table, String sheetName, boolean exportNulls) {
         StringBuilder stringBuilder = new StringBuilder();
 
         try {
@@ -28,7 +29,7 @@ public class CsvExporter implements Exporter {
             throw new RuntimeException(e);
         }
 
-        return stringBuilder.toString().getBytes();
+        FileHelper.writeFile(filePath, stringBuilder.toString());
     }
 
     @Override

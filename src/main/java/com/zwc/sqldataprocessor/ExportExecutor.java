@@ -1,5 +1,9 @@
 package com.zwc.sqldataprocessor;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.exporter.CsvExporter;
@@ -9,6 +13,8 @@ import com.zwc.sqldataprocessor.exporter.XlsxExporter;
 public class ExportExecutor {
     static XlsxExporter xlsxExporter = new XlsxExporter();
     static CsvExporter csvExporter = new CsvExporter();
+
+    public static List<String> exportedPaths = new ArrayList<>();
 
     public static String export(String resultName, DataList table, ExportStatement statement) {
 
@@ -20,31 +26,31 @@ public class ExportExecutor {
             statement.exportXlsx = false;
         }
 
-        // 执行导出
         Exporter exporter = statement.exportXlsx ? new XlsxExporter() : new CsvExporter();
-        byte[] bytes = exporter.export(table, statement.exportNulls);
 
-        // 使用数据集的名称作为导出名称
+        // 自动使用数据集的名称作为导出名称
         if (path == null) {
-            path = String.format("./%s.%s", resultName, exporter.getExtension());
-            path = FileHelper.writeOutputFile(path, bytes);
-            return path;
+            path = resultName;
         }
 
         // 自动添加文件后缀
-        if (!path.toLowerCase().endsWith(exporter.getExtension())) {
-            path = String.format("%s.%s", path, exporter.getExtension());
+        if (!path.toLowerCase().endsWith("." + exporter.getExtension())) {
+            path = path + "." + exporter.getExtension();
         }
 
-        // 仅指定一个文件名称
+        // 自动补全文件路径
         if (!path.contains("/") && !path.contains("\\")) {
-            path = "./"  + path;
-            path = FileHelper.writeOutputFile(path, bytes);
-            return path;
+            path = FileHelper.getOutPath(path);
         }
 
-        // 指定一个完整的文件路径
-        FileHelper.writeFile(path, bytes);
+        // 第一次导出要先删除之前的老文件
+        if (!exportedPaths.contains(path)) {
+            exportedPaths.add(path);
+            FileHelper.deleteFile(path);
+        }
+
+        // 执行导出
+        exporter.export(path, table, statement.sheetName, statement.exportNulls);
         return path;
     }
 }

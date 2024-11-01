@@ -1,13 +1,25 @@
 package com.zwc.sqldataprocessor.exporter;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+import com.google.protobuf.ServiceException;
+import com.zwc.sqldataprocessor.FileHelper;
 import com.zwc.sqldataprocessor.entity.DataList;
+import com.zwc.sqldataprocessor.entity.UserException;
+import lombok.SneakyThrows;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.xssf.streaming.SXSSFCell;
@@ -16,80 +28,93 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class XlsxExporter implements Exporter {
 
+    @SneakyThrows
     @Override
-    public byte[] export(DataList table, boolean exportNulls) {
-        LinkedHashMap<String, DataList> tables = new LinkedHashMap<>();
-        tables.put("sheet1", table);
-        return export(tables, exportNulls);
+    public void export(String filePath, DataList table, String sheetName, boolean exportNulls) {
+        if (CollectionUtils.isEmpty(table.columns)) {
+            throw new UserException("导出失败, 数据集里列数为0.");
+        }
+
+        if (StringUtils.isBlank(sheetName)) {
+            sheetName = "sheet1";
+        }
+
+        SXSSFWorkbook workbook = null;
+        if (FileHelper.exists(filePath)) {
+            byte[] bytes = Files.readAllBytes(Paths.get(filePath));
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+            workbook = new SXSSFWorkbook(new XSSFWorkbook(inputStream), 1000);
+        } else {
+            workbook = new SXSSFWorkbook(1000);
+        }
+
+        try {
+
+            if (workbook.getSheet(sheetName) != null) {
+                throw new UserException("请勿往同一个xlsx文件重复导出相同的sheet名称: " + sheetName);
+            }
+
+            SXSSFSheet sheet = workbook.createSheet(sheetName);
+
+            // 写入表头
+            XSSFCellStyle headStyle = (XSSFCellStyle) workbook.createCellStyle();
+            headStyle.setAlignment(HorizontalAlignment.CENTER);
+            XSSFFont headFont = (XSSFFont )workbook.createFont();
+            headFont.setBold(true);
+            headStyle.setFont(headFont);
+            int index = 0;
+            writeRow(sheet, index, table.columns, headStyle, false);
+
+            // 写入行数据
+            for (List<String> row : table.rows) {
+                index++;
+                writeRow(sheet, index, row, null, exportNulls);
+            }
+
+            // 检测列最大文字数
+            int[] charCounts = new int[table.columns.size()];
+            Consumer<List<String>> detectCharCount = row -> {
+                for (int columnIndex = 0; columnIndex < row.size(); ++columnIndex) {
+                    if (row.get(columnIndex) == null) {
+                        continue;
+                    }
+                    int charCount = row.get(columnIndex).getBytes(Charset.forName("GBK")).length;
+                    charCounts[columnIndex] = Math.max(charCounts[columnIndex], charCount);
+                }
+            };
+            detectCharCount.accept(table.columns);
+            for (List<String> row : table.rows) {
+                detectCharCount.accept(row);
+            }
+
+            // 设置列宽度
+            for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
+                // 限定宽度范围
+                int charCount = Math.max(charCounts[columnIndex], 4);
+                charCount = Math.min(charCount, 80);
+                int width = (charCount + 4) * 220;
+                width = Math.min(width, 255*256);
+                sheet.setColumnWidth(columnIndex, width);
+            }
+
+            // 保存覆盖原文件
+            try (FileOutputStream out = new FileOutputStream(filePath)) {
+                workbook.write(out);
+            }
+        } finally {
+            if (workbook != null) {
+                workbook.close();
+            }
+        }
     }
 
     @Override
     public String getExtension() {
         return "xlsx";
-    }
-
-    public byte[] export(LinkedHashMap<String, DataList> tables, boolean exportNulls) {
-        try (SXSSFWorkbook workbook = new SXSSFWorkbook(1000)) {
-            for (String sheetName : tables.keySet()) {
-                DataList table = tables.get(sheetName);
-                if (table.columns == null) {
-                    continue;
-                }
-                SXSSFSheet sheet = workbook.createSheet(sheetName);
-
-                // 写入表头
-                XSSFCellStyle headStyle = (XSSFCellStyle) workbook.createCellStyle();
-                headStyle.setAlignment(HorizontalAlignment.CENTER);
-                XSSFFont headFont = (XSSFFont )workbook.createFont();
-                headFont.setBold(true);
-                headStyle.setFont(headFont);
-                int index = 0;
-                writeRow(sheet, index, table.columns, headStyle, false);
-
-                // 写入行数据
-                for (List<String> row : table.rows) {
-                    index++;
-                    writeRow(sheet, index, row, null, exportNulls);
-                }
-
-                // 检测列最大文字数
-                int[] charCounts = new int[table.columns.size()];
-                Consumer<List<String>> detectCharCount = row -> {
-                    for (int columnIndex = 0; columnIndex < row.size(); ++columnIndex) {
-                        if (row.get(columnIndex) == null) {
-                            continue;
-                        }
-                        int charCount = row.get(columnIndex).getBytes(Charset.forName("GBK")).length;
-                        charCounts[columnIndex] = Math.max(charCounts[columnIndex], charCount);
-                    }
-                };
-                detectCharCount.accept(table.columns);
-                for (List<String> row : table.rows) {
-                    detectCharCount.accept(row);
-                }
-
-                // 设置列宽度
-                for (int columnIndex = 0; columnIndex < table.columns.size(); ++columnIndex) {
-                    // 限定宽度范围
-                    int charCount = Math.max(charCounts[columnIndex], 4);
-                    charCount = Math.min(charCount, 80);
-                    int width = (charCount + 4) * 220;
-                    width = Math.min(width, 255*256);
-                    sheet.setColumnWidth(columnIndex, width);
-                }
-            }
-
-            // 生成二进制
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            return outputStream.toByteArray();
-
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     /**

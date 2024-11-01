@@ -16,6 +16,11 @@ public class ExportStatement implements Statement {
     public boolean exportXlsx;
 
     /**
+     * 导出xlsx时的sheet的名称
+     */
+    public String sheetName;
+
+    /**
      * 文件名称或文件绝对路径
      */
     public String filePath;
