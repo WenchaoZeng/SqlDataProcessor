@@ -53,7 +53,7 @@ public abstract class DbExecutor {
             if (columnType == ColumnType.INT) {
                     builder.append("bigint");
             } else if (columnType == ColumnType.DECIMAL) {
-                builder.append("decimal");
+                builder.append("decimal(20,4)");
             } else if (columnType == ColumnType.DATETIME) {
                 builder.append("datetime");
             } else {
