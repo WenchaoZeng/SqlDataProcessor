@@ -182,13 +182,25 @@ select * from $table temp;
 # export 这是一个文件名
 ```
 
-示例2: 指定完整的文件路径
+示例3: 仅指定文件名和后缀
+
+```sql
+# export 这是一个文件名.xlsx
+```
+
+示例4: 指定完整的文件路径
 
 ```sql
 # export /Users/wenchaozeng/Downloads/aa.csv
 ```
 
-如果指定了一个文件的后缀, 目前支持`.csv`和`.xlsx`, 则会自动使用对应的文件格式做导出.
+示例5: 导出到具体xlsx文件里的一个sheet名称
+
+```sql
+# export /Users/wenchaozeng/Downloads/aa.xlsx[sheet1]
+```
+
+如果指定了一个文件的后缀, 目前支持`.csv`和`.xlsx`, 则会自动使用对应的文件格式做导出. `.xlsx`支持导出多个sheet到同一个xlsx文件中.
 
 ## 使用 `##` 或 `--` 或 `#` 来添加注释
 
