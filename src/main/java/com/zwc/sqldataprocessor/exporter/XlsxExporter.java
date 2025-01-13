@@ -24,6 +24,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
@@ -64,6 +65,7 @@ public class XlsxExporter implements Exporter {
         }
 
         SXSSFSheet sheet = workbook.createSheet(sheetName);
+        sheet.createFreezePane(0, 1); // 设置表头行固定
 
         // 写入表头
         XSSFCellStyle headStyle = (XSSFCellStyle) workbook.createCellStyle();
