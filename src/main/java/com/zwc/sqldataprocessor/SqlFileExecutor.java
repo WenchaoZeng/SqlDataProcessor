@@ -71,6 +71,7 @@ public class SqlFileExecutor {
         }
 
         // 自动打开导出的文件
+        ExportExecutor.flushAllFiles();
         for (String exportedPath : ExportExecutor.exportedPaths) {
             FileHelper.openFile(exportedPath);
         }

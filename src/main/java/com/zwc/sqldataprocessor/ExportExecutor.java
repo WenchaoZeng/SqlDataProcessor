@@ -16,6 +16,11 @@ public class ExportExecutor {
 
     public static List<String> exportedPaths = new ArrayList<>();
 
+    public static void flushAllFiles() {
+        xlsxExporter.flushAllFiles();
+        csvExporter.flushAllFiles();
+    }
+
     public static String export(String resultName, DataList table, ExportStatement statement) {
 
         // 自动根据文件名称推断导出格式

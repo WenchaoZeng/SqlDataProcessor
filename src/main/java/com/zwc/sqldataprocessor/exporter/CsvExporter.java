@@ -37,4 +37,6 @@ public class CsvExporter implements Exporter {
         return "csv";
     }
 
+    @Override
+    public void flushAllFiles() {}
 }

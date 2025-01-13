@@ -12,4 +12,9 @@ public interface Exporter {
      * 获取文件名的后缀
      */
     String getExtension();
+
+    /**
+     * 将结果写入文件, 并关闭文件流
+     */
+    void flushAllFiles();
 }
