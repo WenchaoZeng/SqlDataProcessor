@@ -1,6 +1,4 @@
 待开发功能:
-    支持循环
-    导入excel里段时间列, 再导出xlsx的时候显示有问题: /Users/wenchaozeng/Downloads/Sparks组群_20241107.xlsx
     导出多个sheet的时候, 后面的sheet导出很慢: /Users/wenchaozeng/Documents/projects/_/数据查询/mgcc/派大星提报数据汇总-mcn版.sql
     当表格里有计算公式报错时, 无法导入数据: 副本派大星已建联情况查询-按tp分.xlsx[Sheet1]
     xlsx导出自动设置为表头行固定

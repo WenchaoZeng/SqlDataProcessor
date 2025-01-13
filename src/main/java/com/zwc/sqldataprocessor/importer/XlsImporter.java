@@ -14,9 +14,11 @@ import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.UserException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -98,6 +100,8 @@ public class XlsImporter implements Importer {
                         value = numberFormat.format(doubleValue);
                     } else if (value.endsWith(".0")) {
                         value = value.substring(0, value.lastIndexOf("."));
+                    } else if (DateUtil.isCellDateFormatted(cell)) {
+                        value = cn.hutool.core.date.DateUtil.formatDateTime(cell.getDateCellValue());
                     }
                 } else if (cell.getCellType() == CellType.FORMULA) {
                     DecimalFormat decimalFormat = new DecimalFormat("0");
