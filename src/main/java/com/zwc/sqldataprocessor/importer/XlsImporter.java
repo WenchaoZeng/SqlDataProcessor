@@ -95,20 +95,18 @@ public class XlsImporter implements Importer {
                 if (cell.getCellType() == CellType.NUMERIC) {
                     if (value.contains("E")) {
                         double doubleValue = Double.parseDouble(value);
-                        NumberFormat numberFormat = NumberFormat.getInstance();
-                        numberFormat.setGroupingUsed(false);
-                        value = numberFormat.format(doubleValue);
+                        value = String.valueOf(doubleValue);
                     } else if (value.endsWith(".0")) {
                         value = value.substring(0, value.lastIndexOf("."));
                     } else if (DateUtil.isCellDateFormatted(cell)) {
                         value = cn.hutool.core.date.DateUtil.formatDateTime(cell.getDateCellValue());
                     }
                 } else if (cell.getCellType() == CellType.FORMULA) {
-                    DecimalFormat decimalFormat = new DecimalFormat("0");
                     try {
-                        value = decimalFormat.format(cell.getNumericCellValue());
+                        double doubleValue = cell.getNumericCellValue();
+                        value = String.valueOf(doubleValue);
                     } catch (IllegalStateException e) {
-                        value = String.valueOf(cell.getRichStringCellValue());
+                        value = null;
                     }
                 }
 
@@ -152,5 +150,4 @@ public class XlsImporter implements Importer {
 
         return table;
     }
-
 }
