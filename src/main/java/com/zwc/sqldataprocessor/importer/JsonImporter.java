@@ -56,7 +56,6 @@ public class JsonImporter implements Importer {
         for (Object row : jsonArray) {
             LinkedHashMap<String, String> jsonRow = new LinkedHashMap<>();
             jsonRows.add(jsonRow);
-            jsonRow.put("raw_json", JSON.toJSONString(row));
             flatJsonRow("", row, jsonRow);
         }
 
