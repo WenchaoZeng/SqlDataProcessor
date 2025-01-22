@@ -83,16 +83,16 @@ public class JsonImporter implements Importer {
     /**
      * 扁平化字段名
      */
-    void flatJsonRow(String prefix, Object row, LinkedHashMap<String, String> jsonRow) {
-        if (row instanceof JSONObject) {
-            JSONObject jsonObject = (JSONObject) row;
+    void flatJsonRow(String prefix, Object obj, LinkedHashMap<String, String> jsonRow) {
+        if (obj instanceof JSONObject) {
+            JSONObject jsonObject = (JSONObject) obj;
             for (String key : jsonObject.keySet()) {
                 Object value = jsonObject.get(key);
                 String newPrefix = prefix.isEmpty() ? key : prefix + "." + key;
                 flatJsonRow(newPrefix, value, jsonRow);
             }
-        } else if (row instanceof JSONArray) {
-            JSONArray jsonArray = (JSONArray) row;
+        } else if (obj instanceof JSONArray) {
+            JSONArray jsonArray = (JSONArray) obj;
             for (int index = 0; index < jsonArray.size(); ++index) {
                 Object value = jsonArray.get(index);
                 String newPrefix = prefix.isEmpty() ? "[" + index + "]" : prefix + ".[" + index + "]";
@@ -100,7 +100,7 @@ public class JsonImporter implements Importer {
             }
         } else {
             prefix = prefix.isEmpty() ? "value" : prefix;
-            jsonRow.put(prefix, Objects.toString(row));
+            jsonRow.put(prefix, obj == null ? null : String.valueOf(obj));
         }
     }
 }
