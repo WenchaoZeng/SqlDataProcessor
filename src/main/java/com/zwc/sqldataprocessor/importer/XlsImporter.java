@@ -23,6 +23,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class XlsImporter implements Importer {
@@ -35,6 +36,8 @@ public class XlsImporter implements Importer {
 
     @Override
     public DataList doImport(byte[] content, String sheetName, int headRowNo) {
+        IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
+
         DataList table = new DataList();
         Workbook book = null;
         try {
