@@ -64,6 +64,7 @@ public class LocalToolExectuor {
             processBuilder.redirectErrorStream(true);
 
             Process process = processBuilder.start();
+            process.getOutputStream().close(); // 关闭输出流，防止阻塞进程
 
             // 读取输出
             StringBuilder output = new StringBuilder();
