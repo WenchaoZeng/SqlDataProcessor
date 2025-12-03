@@ -1,7 +1,6 @@
 package com.zwc.sqldataprocessor.executor;
 
 import java.util.List;
-import java.util.Map;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -9,22 +8,21 @@ import java.util.function.Consumer;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.sql.CallStatement;
-import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 
 /**
  * 运行本地工具
  */
 public class LocalToolExectuor {
-    static String callResultColumnName = "call_result";
-
     public static void exec(CallStatement statement, DataList dataList, Consumer<String> logPrinter) {
-        if (dataList.columns.contains(callResultColumnName)) {
-            logPrinter.accept("已存在工具调用结果列, 忽略本地调用");
-            return;
+        String columnName = "call_result";
+        int increment = 0;
+        while (dataList.columns.contains(columnName)) {
+            increment++;
+            columnName = columnName + "" + increment;
         }
 
         // 增加调用结果列
-        dataList.columns.add(callResultColumnName);
+        dataList.columns.add(columnName);
         dataList.columnTypes.add(DataList.ColumnType.TEXT);
 
         // 调用工具
@@ -46,6 +44,8 @@ public class LocalToolExectuor {
                 logPrinter.accept("已处理: " + percentage + "% (" + processed + "/" + dataList.rows.size() + " 行)");
             }
         }
+
+        logPrinter.accept("已处理完毕, 列名: " + columnName);
     }
 
     private static String exec(String command) {
