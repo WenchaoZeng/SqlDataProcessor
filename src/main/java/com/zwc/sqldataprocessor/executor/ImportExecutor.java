@@ -1,10 +1,9 @@
-package com.zwc.sqldataprocessor;
+package com.zwc.sqldataprocessor.executor;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,6 @@ import com.zwc.sqldataprocessor.importer.CsvImporter;
 import com.zwc.sqldataprocessor.importer.Importer;
 import com.zwc.sqldataprocessor.importer.JsonImporter;
 import com.zwc.sqldataprocessor.importer.XlsImporter;
-import org.apache.commons.collections4.map.LinkedMap;
 import org.apache.commons.lang3.StringUtils;
 
 public class ImportExecutor {

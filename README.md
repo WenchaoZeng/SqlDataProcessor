@@ -289,3 +289,11 @@ DataGrip是支持配置外部工具的, 配置完毕后, 可以实现右键运�
 配置示例:
 
 <img src="./external_tools.jpg" alt="DataGrip配置示例" width="600" />
+
+## 使用 `# call: `来调用本地工具, 结果输出到`call_result`列
+
+示例: 针对表里的每行数据, 执行`uuidgen`并打印`列名A`的数据
+
+```sql
+# call: uuidgen && echo "{列名A}"
+```

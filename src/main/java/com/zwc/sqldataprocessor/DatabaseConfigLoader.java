@@ -16,6 +16,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import com.zwc.sqldataprocessor.dbexecutor.DbExecutor;
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
+import com.zwc.sqldataprocessor.executor.SqlExecutor;
 import org.apache.commons.lang3.StringUtils;
 
 public class DatabaseConfigLoader {
@@ -55,7 +56,7 @@ public class DatabaseConfigLoader {
         }
     }
 
-    static DatabaseConfig getDbConfig(String databaseName) {
+    public static DatabaseConfig getDbConfig(String databaseName) {
         loadDatabaseConfigs();
         return databaseConfigs.get(databaseName);
     }

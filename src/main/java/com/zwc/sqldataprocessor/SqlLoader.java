@@ -6,10 +6,12 @@ import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
+import com.zwc.sqldataprocessor.entity.sql.CallStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import com.zwc.sqldataprocessor.entity.sql.Statement;
+import com.zwc.sqldataprocessor.executor.ImportExecutor;
 import org.apache.commons.lang3.StringUtils;
 
 public class SqlLoader {
@@ -87,6 +89,15 @@ public class SqlLoader {
                         }
                     }
 
+                    statements.add(statement);
+                    continue;
+                }
+
+                // 本地工具调用
+                String callPrefix = "# call: ";
+                if (line.startsWith(callPrefix)) {
+                    CallStatement statement = new CallStatement();
+                    statement.command = line.replace(callPrefix, "");
                     statements.add(statement);
                     continue;
                 }

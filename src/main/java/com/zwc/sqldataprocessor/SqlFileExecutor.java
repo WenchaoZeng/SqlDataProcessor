@@ -9,10 +9,15 @@ import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.UserException;
+import com.zwc.sqldataprocessor.entity.sql.CallStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import com.zwc.sqldataprocessor.entity.sql.Statement;
+import com.zwc.sqldataprocessor.executor.ExportExecutor;
+import com.zwc.sqldataprocessor.executor.ImportExecutor;
+import com.zwc.sqldataprocessor.executor.LocalToolExectuor;
+import com.zwc.sqldataprocessor.executor.SqlExecutor;
 import org.apache.commons.lang3.StringUtils;
 
 public class SqlFileExecutor {
@@ -62,6 +67,14 @@ public class SqlFileExecutor {
                 lastResultName = sqlStatement.resultName;
                 tables.put(lastResultName, dataList);
                 printStatus(lastResultName, dataList, logPrinter, startTime);
+            }
+
+            // 执行本地工具
+            if (statement instanceof CallStatement && lastResultName != null) {
+                DataList dataList = tables.get(lastResultName);
+                CallStatement callStatement = (CallStatement) statement;
+                logPrinter.accept("执行本地工具: " + callStatement.command);
+                LocalToolExectuor.exec(callStatement, dataList, logPrinter);
             }
 
             // 导出
