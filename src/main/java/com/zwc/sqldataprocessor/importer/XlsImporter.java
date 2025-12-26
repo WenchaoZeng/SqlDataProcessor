@@ -3,6 +3,7 @@ package com.zwc.sqldataprocessor.importer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -97,8 +98,7 @@ public class XlsImporter implements Importer {
                 String value = cell.toString();
                 if (cell.getCellType() == CellType.NUMERIC) {
                     if (value.contains("E")) {
-                        double doubleValue = Double.parseDouble(value);
-                        value = String.valueOf(doubleValue);
+                        value = new BigDecimal(value).toPlainString();
                     } else if (value.endsWith(".0")) {
                         value = value.substring(0, value.lastIndexOf("."));
                     } else if (DateUtil.isCellDateFormatted(cell)) {
@@ -107,7 +107,7 @@ public class XlsImporter implements Importer {
                 } else if (cell.getCellType() == CellType.FORMULA) {
                     try {
                         double doubleValue = cell.getNumericCellValue();
-                        value = String.valueOf(doubleValue);
+                        value = BigDecimal.valueOf(doubleValue).toPlainString();
                     } catch (IllegalStateException e) {
                         value = null;
                     }
