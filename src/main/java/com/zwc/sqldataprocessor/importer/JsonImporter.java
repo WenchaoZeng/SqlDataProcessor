@@ -42,17 +42,17 @@ public class JsonImporter implements Importer {
                 if (!jsonObject.containsKey(field)) {
                     throw new UserException("不存在json字段: " + field);
                 }
-                json = jsonObject.getJSONObject(field);
+                json = jsonObject.get(field);
             }
         }
 
         // 规整化为json数组
         JSONArray jsonArray;
-        if (json instanceof JSONObject) {
+        if (json instanceof JSONArray) {
+            jsonArray = (JSONArray) json;
+        } else {
             jsonArray = new JSONArray(1);
             jsonArray.add(json);
-        } else {
-            jsonArray = (JSONArray) json;
         }
 
         // 扁平化json数据
@@ -106,7 +106,7 @@ public class JsonImporter implements Importer {
             prefix = prefix.isEmpty() ? "value" : prefix;
             String value = obj == null || obj instanceof JSONNull ? null : String.valueOf(obj);
             if (obj instanceof Number) { // 还原原始的数值
-                if (value.contains("E")) {
+                if (value.contains("E") || value.contains("e")) {
                     value = new BigDecimal(value).toPlainString();
                 } else if (value.endsWith(".0")) {
                     value = value.substring(0, value.lastIndexOf("."));
