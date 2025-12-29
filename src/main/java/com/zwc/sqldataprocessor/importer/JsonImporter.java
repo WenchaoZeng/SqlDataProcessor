@@ -1,5 +1,6 @@
 package com.zwc.sqldataprocessor.importer;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -7,10 +8,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONConfig;
+import cn.hutool.json.JSONNull;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.DataList.ColumnType;
 import com.zwc.sqldataprocessor.entity.UserException;
@@ -26,29 +28,31 @@ public class JsonImporter implements Importer {
 
         // 读取json
         String contentStr = new String(content);
-        Object jsonObject = JSON.parse(contentStr);
+        JSONConfig jsonConfig = JSONConfig.create().setIgnoreNullValue(false);
+        Object json = JSONUtil.parse(contentStr, jsonConfig);
 
-        // 指定一个字段路径
+        // 指定字段路径
         if (StringUtils.isNotBlank(sheetName)) {
             String[] fields = sheetName.split("[.]");
             for (String field : fields) {
-                if (!(jsonObject instanceof JSONObject)) {
+                if (!(json instanceof JSONObject)) {
                     throw new UserException("不支持在json数组里指定字段: " + field);
                 }
-                if (!((JSONObject) jsonObject).containsKey(field)) {
+                JSONObject jsonObject = (JSONObject) json;
+                if (!jsonObject.containsKey(field)) {
                     throw new UserException("不存在json字段: " + field);
                 }
-                jsonObject = ((JSONObject) jsonObject).get(field);
+                json = jsonObject.getJSONObject(field);
             }
         }
 
         // 规整化为json数组
         JSONArray jsonArray;
-        if (jsonObject instanceof JSONObject) {
-            jsonArray = new JSONArray();
-            jsonArray.add(jsonObject);
+        if (json instanceof JSONObject) {
+            jsonArray = new JSONArray(1);
+            jsonArray.add(json);
         } else {
-            jsonArray = (JSONArray) jsonObject;
+            jsonArray = (JSONArray) json;
         }
 
         // 扁平化json数据
@@ -100,7 +104,15 @@ public class JsonImporter implements Importer {
             }
         } else {
             prefix = prefix.isEmpty() ? "value" : prefix;
-            jsonRow.put(prefix, obj == null ? null : String.valueOf(obj));
+            String value = obj == null || obj instanceof JSONNull ? null : String.valueOf(obj);
+            if (obj instanceof Number) { // 还原原始的数值
+                if (value.contains("E")) {
+                    value = new BigDecimal(value).toPlainString();
+                } else if (value.endsWith(".0")) {
+                    value = value.substring(0, value.lastIndexOf("."));
+                }
+            }
+            jsonRow.put(prefix, value);
         }
     }
 }
