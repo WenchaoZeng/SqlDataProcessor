@@ -97,6 +97,9 @@ public class SqlFileExecutor {
         String exportPath = ExportExecutor.export(resultName, dataList, statement);
         exportPath = Paths.get(exportPath).toFile().getAbsolutePath();
         logPrinter.accept("导出文件路径: " + exportPath);
+        if (StringUtils.isNotBlank(statement.sheetName)) {
+            logPrinter.accept("sheet名称: " + statement.sheetName);
+        }
     }
 
     static void printStatus(String resultName, DataList dataList, Consumer<String> logPrinter, long startTime) {
