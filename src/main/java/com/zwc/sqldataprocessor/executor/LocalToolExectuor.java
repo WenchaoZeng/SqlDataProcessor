@@ -32,7 +32,8 @@ public class LocalToolExectuor {
             String command = statement.command;
             for (int index = 0; index < dataList.columns.size() - 1; index++) {
                 String placeHolderName = "{" + dataList.columns.get(index) + "}";
-                command = command.replace(placeHolderName, row.get(index));
+                String value = row.get(index) == null ? "" : row.get(index);
+                command = command.replace(placeHolderName, value);
             }
 
             row.add(exec(command));
