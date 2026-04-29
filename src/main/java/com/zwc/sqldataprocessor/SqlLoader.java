@@ -17,10 +17,12 @@ import org.apache.commons.lang3.StringUtils;
 public class SqlLoader {
     static boolean exportNulls;
     static boolean exportXlsx;
+    static boolean noexport;
 
     public static List<Statement> loadSql(String filePath) {
         exportNulls = false;
         exportXlsx = false;
+        noexport = false;
         String fileContent = FileHelper.readFile(filePath);
         List<Statement> statements = new ArrayList<>();
 
@@ -50,6 +52,16 @@ public class SqlLoader {
 
                 if (lowerLine.equals("# exportxlsx")) {
                     exportXlsx = true;
+                    continue;
+                }
+
+                if (lowerLine.equals("# noexport")) {
+                    noexport = true;
+                    continue;
+                }
+
+                if (lowerLine.equals("# -noexport")) {
+                    noexport = false;
                     continue;
                 }
 
@@ -155,7 +167,7 @@ public class SqlLoader {
      * 在语句后面自动加上一个导出语句
      */
     static void tryAddExportToEnd(List<Statement> statements) {
-        if (statements.size() <= 0) {
+        if (noexport || statements.size() <= 0) {
             return;
         }
 
