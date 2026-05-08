@@ -210,9 +210,39 @@ select * from $table temp;
 
 如果指定了一个文件的后缀, 目前支持`.csv`和`.xlsx`, 则会自动使用对应的文件格式做导出. `.xlsx`支持导出多个sheet到同一个xlsx文件中.
 
+## 使用 `# label: xxx` 和 `# goto: xxx` 做条件跳转
+
+`# label: xxx` 用来标记一个位置, `# goto: xxx` 用来跳转到对应的label处重新开始执行.
+
+`goto` 只有在上一个`SQL`语句的结果集有数据时才会跳转. 如果上一个`SQL`结果为空, 则不会跳转, 继续向下执行.
+
+注意:
+
+* `goto`判断的是上一个`SQL`语句的结果, 不是`# import`或`# call`的结果
+* `label`名称不能重复
+* `goto`引用的`label`必须存在
+
+示例: 当结果里还有数据时循环继续处理, 直到结果为空停止.
+
+```sql
+# h2 as $step
+select 1 as n
+
+# label: loop
+
+# h2 as $step
+select n + 1 as n from $step where n < 3
+
+# goto: loop
+
+# export loop_result.csv
+```
+
+上面的示例会依次得到`2`, `3`, 然后下一次查询结果为空, 因此`goto`不会再跳转, 最终执行后续语句.
+
 ## 使用 `##` 或 `--` 或 `#` 来添加注释
 
-当使用 `#` 来注释时, 后面的文字不能是这个工具的关键词, 比如 `export`, `import`, `end`, `noexport`, 或者是一个存在的数据库名.
+当使用 `#` 来注释时, 后面的文字不能是这个工具的关键词, 比如 `export`, `import`, `end`, `noexport`, `label:`, `goto:`, 或者是一个存在的数据库名.
 
 ```sql
 

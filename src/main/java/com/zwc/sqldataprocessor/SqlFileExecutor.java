@@ -2,16 +2,18 @@ package com.zwc.sqldataprocessor;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
-import java.util.List;
 
 import com.zwc.sqldataprocessor.entity.DataList;
 import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.CallStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
+import com.zwc.sqldataprocessor.entity.sql.GotoStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
+import com.zwc.sqldataprocessor.entity.sql.LabelStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import com.zwc.sqldataprocessor.entity.sql.Statement;
 import com.zwc.sqldataprocessor.executor.ExportExecutor;
@@ -40,10 +42,12 @@ public class SqlFileExecutor {
         }
 
         Map<String, DataList> tables = new HashMap<>();
+        Map<String, Integer> labelPositions = buildLabelPositions(statements);
 
         // 执行
         String lastResultName = null;
-        for (Statement statement : statements) {
+        for (int statementIndex = 0; statementIndex < statements.size(); ++statementIndex) {
+            Statement statement = statements.get(statementIndex);
 
             logPrinter.accept("==============================");
             long startTime = System.currentTimeMillis();
@@ -69,6 +73,28 @@ public class SqlFileExecutor {
                 printStatus(lastResultName, dataList, logPrinter, startTime);
             }
 
+            if (statement instanceof LabelStatement) {
+                logPrinter.accept("标签: " + ((LabelStatement) statement).labelName);
+            }
+
+            if (statement instanceof GotoStatement) {
+                GotoStatement gotoStatement = (GotoStatement) statement;
+                DataList dataList = lastResultName == null ? null : tables.get(lastResultName);
+                if (!hasRows(dataList)) {
+                    logPrinter.accept("跳过goto: " + gotoStatement.labelName + "，上一个SQL结果集无数据");
+                    continue;
+                }
+
+                Integer nextIndex = labelPositions.get(gotoStatement.labelName);
+                if (nextIndex == null) {
+                    throw new UserException("未找到label: " + gotoStatement.labelName);
+                }
+
+                logPrinter.accept("跳转到label: " + gotoStatement.labelName);
+                statementIndex = nextIndex;
+                continue;
+            }
+
             // 执行本地工具
             if (statement instanceof CallStatement && lastResultName != null) {
                 DataList dataList = tables.get(lastResultName);
@@ -89,6 +115,27 @@ public class SqlFileExecutor {
             FileHelper.openFile(exportedPath);
         }
 
+    }
+
+    static Map<String, Integer> buildLabelPositions(List<Statement> statements) {
+        Map<String, Integer> labelPositions = new LinkedHashMap<>();
+        for (int i = 0; i < statements.size(); ++i) {
+            Statement statement = statements.get(i);
+            if (!(statement instanceof LabelStatement)) {
+                continue;
+            }
+
+            String labelName = ((LabelStatement) statement).labelName;
+            if (labelPositions.containsKey(labelName)) {
+                throw new UserException("label重复定义: " + labelName);
+            }
+            labelPositions.put(labelName, i);
+        }
+        return labelPositions;
+    }
+
+    static boolean hasRows(DataList dataList) {
+        return dataList != null && dataList.rows != null && dataList.rows.size() > 0;
     }
 
     static void doExport(String resultName, DataList dataList, ExportStatement statement, Consumer<String> logPrinter) {

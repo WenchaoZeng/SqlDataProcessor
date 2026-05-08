@@ -8,7 +8,9 @@ import com.zwc.sqldataprocessor.entity.DatabaseConfig;
 import com.zwc.sqldataprocessor.entity.UserException;
 import com.zwc.sqldataprocessor.entity.sql.CallStatement;
 import com.zwc.sqldataprocessor.entity.sql.ExportStatement;
+import com.zwc.sqldataprocessor.entity.sql.GotoStatement;
 import com.zwc.sqldataprocessor.entity.sql.ImportStatement;
+import com.zwc.sqldataprocessor.entity.sql.LabelStatement;
 import com.zwc.sqldataprocessor.entity.sql.SqlStatement;
 import com.zwc.sqldataprocessor.entity.sql.Statement;
 import com.zwc.sqldataprocessor.executor.ImportExecutor;
@@ -114,6 +116,22 @@ public class SqlLoader {
                     continue;
                 }
 
+                String labelPrefix = "# label: ";
+                if (line.startsWith(labelPrefix)) {
+                    LabelStatement statement = new LabelStatement();
+                    statement.labelName = getLabelName(line, labelPrefix);
+                    statements.add(statement);
+                    continue;
+                }
+
+                String gotoPrefix = "# goto: ";
+                if (line.startsWith(gotoPrefix)) {
+                    GotoStatement statement = new GotoStatement();
+                    statement.labelName = getLabelName(line, gotoPrefix);
+                    statements.add(statement);
+                    continue;
+                }
+
                 // db名称
                 String databaseName = line.replaceFirst("# ", "");
                 databaseName = removeResultNameClause(databaseName);
@@ -187,6 +205,14 @@ public class SqlLoader {
     static String removeResultNameClause(String line) {
         int index = line.lastIndexOf(" as $");
         return index >= 0 ? line.substring(0, index) : line;
+    }
+
+    static String getLabelName(String line, String prefix) {
+        String labelName = line.replace(prefix, "").trim();
+        if (StringUtils.isBlank(labelName)) {
+            throw new UserException("label名称不能为空: " + line);
+        }
+        return labelName;
     }
 
     /**
